@@ -1,3 +1,6 @@
 out/
 .DS_Store
 .gstack/
+
+# baton run state, never committed
+_orch/
