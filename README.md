@@ -189,7 +189,12 @@ construction.
 ./build.sh                 # test, rebuild index.html, verify
 ./build.sh --svg           # also write one standalone .svg per sheet to out/
 ./build.sh --standalone    # also write the prompt-with-renderer variant to out/
+
+node src/build/social-card.mjs > /tmp/card.html   # then screenshot at 1200x630
 ```
+
+The social card is a committed PNG rather than a build output: turning a page into
+an image needs a browser, and this builds with Node and nothing else.
 
 Everything that builds the file lives in `src/`. Nothing else is committed —
 `out/` is scratch.
@@ -208,7 +213,8 @@ Everything that builds the file lives in `src/`. Nothing else is committed —
 | `src/detail.mjs` | the click-through modal, per lens |
 | `src/page.mjs` | page assembly: document body, library shell, embedded payloads |
 | `src/assets/` | stylesheet and interaction layer, inlined at build time |
-| `src/build/` | the bundler and the four build entry points |
+| `src/build/` | the bundler and the build entry points |
+| `social-card.png` | the 1200x630 link preview, committed; regenerate with `src/build/social-card.mjs` and a browser |
 | `src/examples/` | the five documents the file ships with, plus `how-it-works` — the explainer drawn in the hero |
 | `src/test.mjs` | module tests plus the geometric correctness checklist |
 | `src/notes/` | the DRAKON digest and the reference-page critique |

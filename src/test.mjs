@@ -824,6 +824,32 @@ t("ordinary tags still build", () => {
   eq(build(d).errors.length, 0, "nothing reserved about these");
 });
 
+t("the hosted library page carries a social card", () => {
+  const docs = [{ id: "starter", doc: JSON.parse(readFileSync(join(ROOT, "src", "examples", "starter.wfd.json"), "utf8")), build: null, preview: "" }];
+  docs[0].build = build(docs[0].doc);
+  const html = renderLibraryPage(docs, {
+    site: { title: "T", subtitle: "S" }, css: "", js: "", runtime: "", starter: "{}", prompt: "",
+    social: { url: "https://example.test/", image: "https://example.test/social-card.png" },
+  });
+  const head = html.slice(0, html.indexOf("</head>"));
+  ok(/og:image"\s+content="https:\/\/example\.test\/social-card\.png"/.test(head), "names the image");
+  ok(/og:image:width"\s+content="1200"/.test(head), "and its size, which several scrapers require");
+  ok(/twitter:card"\s+content="summary_large_image"/.test(head), "asks for the large card");
+  ok(/og:url"\s+content="https:\/\/example\.test\/"/.test(head), "and states the canonical url");
+});
+
+t("a generated page never claims someone else's social card", () => {
+  // A generated file gets mailed around and hosted anywhere. Stamping it with an
+  // absolute og:image would put this project's card on another person's document
+  // at a URL their copy has nothing to do with.
+  const html = renderPage(build(MINIMAL()), { css: "", js: "", runtime: "", prompt: "", starter: "{}", source: "{}" });
+  const head = html.slice(0, html.indexOf("</head>"));
+  ok(!/og:image/.test(head), "no image");
+  ok(!/og:url/.test(head), "no canonical url");
+  ok(/og:title/.test(head), "but it still says what it is");
+  ok(/twitter:card"\s+content="summary"/.test(head), "as a small card, which needs no host");
+});
+
 t("nothing automatic can mark a step verified", () => {
   // The human-act rule from D3, and D4's refusal to move meta.date on a rebuild,
   // are the same rule. Enforced structurally: there is exactly one write to the
