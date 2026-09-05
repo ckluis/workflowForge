@@ -422,13 +422,45 @@ function builderPanel() {
 const HOME = { url: "https://ckluis.github.io/workflowforge", label: "ckluis.github.io/workflowforge" };
 
 /** Shared bits of the document `<head>`. */
-function headTag(title, description, css, accent, density) {
+/**
+ * `social` is optional and carries { url, image } for a page whose canonical
+ * address is known at build time — which is only ever the hosted library file.
+ *
+ * A GENERATED page must not get one. Those files are handed around, mailed and
+ * hosted anywhere, so stamping them with an absolute og:image would put this
+ * project's card on somebody else's document, at a URL their copy has no
+ * relationship to. They still get og:title and og:description, which need no
+ * host to be true.
+ *
+ * None of this makes the page fetch anything: og tags are read by the crawler
+ * that unfurls a link, never by the browser rendering it. The file still stands
+ * alone, and build.sh still proves it.
+ */
+function headTag(title, description, css, accent, density, social) {
+  const desc = plain(description || "").slice(0, 200);
+  const og = [
+    `<meta property="og:type" content="website">`,
+    `<meta property="og:title" content="${attr(plain(title))}">`,
+    `<meta property="og:description" content="${attr(desc)}">`,
+    `<meta property="og:site_name" content="workflowForge">`,
+  ];
+  if (social && social.image) {
+    og.push(`<meta property="og:image" content="${attr(social.image)}">`);
+    og.push(`<meta property="og:image:width" content="1200">`);
+    og.push(`<meta property="og:image:height" content="630">`);
+    og.push(`<meta property="og:image:alt" content="${attr(plain(title))} — a workflow sheet drawn by the renderer")>`.replace(")>", ">"));
+    og.push(`<meta name="twitter:card" content="summary_large_image">`);
+  } else {
+    og.push(`<meta name="twitter:card" content="summary">`);
+  }
+  if (social && social.url) og.push(`<meta property="og:url" content="${attr(social.url)}">`);
   return `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(plain(title))}</title>
-<meta name="description" content="${attr(plain(description || "").slice(0, 200))}">
+<meta name="description" content="${attr(desc)}">
 <meta name="generator" content="workflowForge — WFD v1">
 <meta name="color-scheme" content="light dark">
+${og.join("\n")}
 <style id="wfd-css">${css}</style>
 <style id="wfd-accent">:root { --accent: ${accent}; }
 ${densityCss(DENSITY[density || "comfortable"] || DENSITY.comfortable)}</style>`;
@@ -978,7 +1010,7 @@ export function renderLibraryPage(entries, opts = {}) {
   return `<!doctype html>
 <html lang="en">
 <head>
-${headTag(site.title || "Workflow atlas", site.description || "", opts.css || "", accent, "comfortable")}
+${headTag(site.title || "Workflow atlas", site.subtitle || site.description || "", opts.css || "", accent, "comfortable", opts.social)}
 </head>
 <body>
 

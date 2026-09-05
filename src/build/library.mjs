@@ -150,7 +150,15 @@ function main() {
     process.exit(1);
   }
   const heroBuild = howBuild.workflows[0];
+  // The canonical home of the hosted copy. Only the library file gets this:
+  // a generated page could be served from anywhere and must not claim it.
+  const SOCIAL = {
+    url: "https://ckluis.github.io/workflowForge/",
+    image: "https://ckluis.github.io/workflowForge/social-card.png",
+  };
+
   const html = renderLibraryPage(entries, {
+    social: SOCIAL,
     site, css, js, runtime, starter, prompt: promptBody(),
     heroBuild, heroDoc: howDoc,
     heroCaption: "Drawn by the renderer it describes, from the same format as every page in this file",
