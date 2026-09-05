@@ -1,0 +1,2598 @@
+{
+  "wfd": 1,
+  "title": "Becoming a US citizen by naturalization",
+  "subtitle": "Form N-400, from counting your days to the oath",
+  "description": "Four connected workflows covering the ordinary adult path to US citizenship: confirming that the statutory clocks have actually run, filing Form N-400 and surviving intake, getting through biometrics, the interview, the tests and the oath, and — if the answer is no — asking a second officer to look again. The diagrams are written for a lawful permanent resident preparing their own case, and for the volunteer or paralegal helping them. Every threshold, form number and deadline on these sheets is a real one; none of it is legal advice, and a case with any arrest, long absence or prior immigration violation belongs in front of a lawyer before it goes to USCIS.",
+  "meta": {
+    "date": "2026-08-23",
+    "reviewEvery": "6 months",
+    "source": "USCIS naturalization guidance current to August 2026",
+    "version": "1.0",
+    "tags": [
+      "immigration",
+      "naturalization",
+      "n-400",
+      "uscis"
+    ],
+    "disclaimer": "**This is not legal advice, and it was drafted by a language model.** Every threshold, fee and deadline on these sheets needs checking against current USCIS guidance before anyone relies on it — fees and the civics test have both changed recently, and a further fee rule was proposed in 2026. A case involving any arrest, a long absence, or a prior immigration violation belongs in front of a lawyer before it goes to USCIS."
+  },
+  "theme": {
+    "accent": "#2f5d8f",
+    "density": "comfortable"
+  },
+  "glossary": [
+    {
+      "term": "LPR",
+      "definition": "Lawful permanent resident. The clock starts on the **Resident Since** date printed on the green card, not the date the card was issued or renewed."
+    },
+    {
+      "term": "Continuous residence",
+      "definition": "Keeping the United States as your home for the whole statutory period. Broken by an absence of a year or more; presumed broken by an absence over six months."
+    },
+    {
+      "term": "Physical presence",
+      "definition": "Actual days inside the country. **913 days** under the five-year rule, **548 days** under the three-year spouse rule."
+    },
+    {
+      "term": "Good moral character",
+      "definition": "The statutory character finding, measured over the five- or three-year period but informed by conduct before it. USCIS guidance since 2025 also weighs positive contributions, and neighborhood investigations have resumed."
+    },
+    {
+      "term": "90-day early filing",
+      "definition": "You may file up to 90 calendar days before you complete the continuous residence requirement. It shortens only that requirement, and a day too early is a rejection."
+    },
+    {
+      "term": "N-652",
+      "definition": "The Naturalization Interview Results notice handed over at the end of the interview, with one of three boxes marked: granted, continued, or denied."
+    },
+    {
+      "term": "N-445",
+      "definition": "The oath ceremony notice. Its back page asks what has changed since the interview and must be answered honestly on the day."
+    },
+    {
+      "term": "N-550",
+      "definition": "The Certificate of Naturalization, issued at the ceremony. Replacing it later means Form N-565 and months of waiting."
+    }
+  ],
+  "actors": [
+    { "id": "applicant", "name": "Applicant", "short": "APP" },
+    { "id": "uscis", "name": "USCIS", "short": "USC" },
+    { "id": "counsel", "name": "Counsel", "short": "ATT" }
+  ],
+  "workflows": [
+    {
+      "id": "n400-filing",
+      "title": "File Form N-400 and get it accepted",
+      "description": "The filing half of naturalization: confirm the clocks, build the application in a USCIS online account, decide how the fee gets paid, submit, and confirm that USCIS receipted rather than rejected it. Everything here is under the applicant's control, which is why every mistake in this workflow is expensive.",
+      "lens": "ui",
+      "summary": {
+        "trigger": "A permanent resident reaches the end of their statutory residence period",
+        "outcome": "USCIS has receipted the application and the case is queued for biometrics",
+        "owner": "The applicant, optionally with a G-28 attorney",
+        "duration": "6-20 hours over 2-6 weeks",
+        "frequency": "Roughly 850,000 N-400s filed per year"
+      },
+      "phases": [
+        {
+          "label": "Prepare",
+          "from": "confirm-filing-window",
+          "to": "upload-evidence"
+        },
+        {
+          "label": "File",
+          "from": "fee-gate",
+          "to": "submit-and-pay"
+        },
+        {
+          "label": "Confirm",
+          "from": "check-acceptance",
+          "to": "track-case"
+        }
+      ],
+      "start": {
+        "label": "You decide to apply",
+        "note": "Green card and passports on the table"
+      },
+      "steps": [
+        {
+          "id": "confirm-filing-window",
+          "type": "insert",
+          "actorId": "applicant",
+          "workflow": "eligibility-check",
+          "title": "Confirm eligibility and filing date",
+          "note": "One day early is a rejection",
+          "tag": "90-day rule",
+          "detail": {
+            "purpose": "USCIS does not check your arithmetic before taking your money. The agency receipts the application, cashes the fee, schedules biometrics, and only at the interview does an officer count the days and deny the case for a shortfall that was visible on day one. This step moves that count to the front, where fixing it costs a wait instead of $710.",
+            "actor": "The applicant, with the day-count workflow open beside them",
+            "duration": "1-3 hours, plus days of waiting if travel records must be ordered",
+            "systems": [
+              "myUSCIS",
+              "CBP I-94 traveler history",
+              "IRS tax transcripts"
+            ],
+            "screen": {
+              "title": "myUSCIS — Should I apply for citizenship?",
+              "elements": [
+                {
+                  "type": "heading",
+                  "label": "Check your eligibility before you start"
+                },
+                {
+                  "type": "list",
+                  "label": "Requirements",
+                  "hint": "Age 18, LPR period, continuous residence, physical presence, character, English and civics"
+                },
+                {
+                  "type": "text",
+                  "label": "Resident Since date",
+                  "hint": "Read it off the front of the green card"
+                },
+                {
+                  "type": "input",
+                  "label": "Earliest filing date",
+                  "hint": "Anniversary minus 90 days",
+                  "state": "focus"
+                },
+                {
+                  "type": "button",
+                  "label": "Start my N-400",
+                  "state": "default",
+                  "target": "create-uscis-account"
+                }
+              ]
+            },
+            "options": [
+              {
+                "label": "Start my N-400",
+                "leadsTo": "create-uscis-account",
+                "why": "Taken once every count clears with room to spare. Starting the form is free and nothing is filed until payment, so an applicant who is close but unsure loses nothing by drafting early."
+              },
+              {
+                "label": "Recheck the day count",
+                "leadsTo": "confirm-filing-window",
+                "why": "The loop most applicants need at least once, because land border crossings to Canada and Mexico do not appear in the I-94 history and have to be reconstructed from card statements and stamps."
+              }
+            ],
+            "rules": [
+              "The five-year clock runs from the Resident Since date on Form I-551, even if the card was replaced since.",
+              "The 90-day early filing provision shortens the continuous residence requirement only.",
+              "Three months of residence in the state or USCIS district must be complete at filing."
+            ],
+            "failureModes": [
+              {
+                "when": "Trips abroad cannot be reconstructed",
+                "then": "Order the I-94 travel history and pull passport stamps before drafting",
+                "step": "complete-application"
+              }
+            ]
+          }
+        },
+        {
+          "id": "create-uscis-account",
+          "type": "action",
+          "actorId": "applicant",
+          "title": "Create a USCIS online account",
+          "note": "Online filing is $50 cheaper",
+          "detail": {
+            "purpose": "The account is the case file for the next year: notices, evidence requests, appointment rescheduling and address changes all run through it. Paper filers get one too, by way of a mailed Account Acceptance Notice, so the only real question is whether the application itself is typed here or mailed.",
+            "actor": "The applicant",
+            "duration": "10-15 minutes",
+            "systems": [
+              "myaccount.uscis.gov"
+            ],
+            "screen": {
+              "title": "USCIS online account — sign up",
+              "elements": [
+                {
+                  "type": "heading",
+                  "label": "Create your USCIS online account"
+                },
+                {
+                  "type": "input",
+                  "label": "Email address",
+                  "hint": "Use an address you will still control in two years",
+                  "state": "focus"
+                },
+                {
+                  "type": "input",
+                  "label": "Password",
+                  "hint": "8 or more characters"
+                },
+                {
+                  "type": "text",
+                  "label": "Two-step verification",
+                  "hint": "Authenticator app, SMS, or emailed code"
+                },
+                {
+                  "type": "list",
+                  "label": "Account type",
+                  "hint": "Applicant — I am filing for myself"
+                },
+                {
+                  "type": "button",
+                  "label": "Verify and continue",
+                  "state": "default",
+                  "target": "complete-application"
+                }
+              ]
+            },
+            "options": [
+              {
+                "label": "Verify and continue",
+                "leadsTo": "complete-application",
+                "why": "The ordinary route. Online filing costs $710 rather than $760 and produces a receipt notice in one to three days instead of two to four weeks."
+              },
+              {
+                "label": "File on paper instead",
+                "leadsTo": "prepare-reduced-fee-request",
+                "why": "Forced, not chosen: anyone requesting a reduced fee or a fee waiver, and anyone filing from outside the United States, must submit a paper N-400."
+              }
+            ],
+            "rules": [
+              "One account per applicant. Sharing an account between spouses corrupts both case timelines.",
+              "The account email is where every notice alert goes; losing access to it is the most common self-inflicted delay.",
+              "Paper filers should still create the account from the Account Acceptance Notice."
+            ]
+          }
+        },
+        {
+          "id": "complete-application",
+          "type": "action",
+          "actorId": "applicant",
+          "title": "Complete every part of the N-400",
+          "note": "Answer the character questions honestly",
+          "detail": {
+            "purpose": "The form is not a summary of your life, it is a sworn statement that an officer will walk through line by line while you are under oath. Omissions found at the interview are treated as concealment and can sink a case that the underlying facts would have survived.",
+            "actor": "The applicant, or a preparer whose details go on the form",
+            "duration": "3-8 hours, usually across several sittings",
+            "systems": [
+              "myUSCIS N-400 form",
+              "Employment and address history",
+              "Court records"
+            ],
+            "screen": {
+              "title": "N-400 — Application for Naturalization",
+              "elements": [
+                {
+                  "type": "heading",
+                  "label": "Application for Naturalization"
+                },
+                {
+                  "type": "list",
+                  "label": "Sections",
+                  "hint": "Eligibility, biographic information, addresses, employment, marital history, children, time outside the US, character"
+                },
+                {
+                  "type": "input",
+                  "label": "Trips outside the United States",
+                  "hint": "Every absence of 24 hours or more",
+                  "state": "focus"
+                },
+                {
+                  "type": "input",
+                  "label": "Have you ever been arrested, cited or detained?",
+                  "hint": "Yes, even if dismissed, expunged or sealed"
+                },
+                {
+                  "type": "badge",
+                  "label": "Draft saved",
+                  "state": "default"
+                },
+                {
+                  "type": "button",
+                  "label": "Save and continue",
+                  "state": "default",
+                  "target": "upload-evidence"
+                }
+              ]
+            },
+            "options": [
+              {
+                "label": "Save and continue",
+                "leadsTo": "upload-evidence",
+                "why": "The form saves in place, which is the point — the trips table alone usually needs a second sitting with a passport in hand."
+              },
+              {
+                "label": "Request a disability accommodation",
+                "leadsTo": "upload-evidence",
+                "why": "Requested inside the form rather than later, because accommodations such as a sign language interpreter have to be scheduled with the interview."
+              }
+            ],
+            "rules": [
+              "List every trip abroad of 24 hours or more, with exact dates.",
+              "Address and employment history must cover the last five years with no gaps.",
+              "Disclose every arrest, citation and detention regardless of outcome, including expunged and juvenile matters.",
+              "Men who lived in the US between 18 and 26 must resolve Selective Service registration."
+            ],
+            "failureModes": [
+              {
+                "when": "A required answer is genuinely unknown",
+                "then": "Explain in the additional information section rather than guessing"
+              }
+            ]
+          }
+        },
+        {
+          "id": "upload-evidence",
+          "type": "action",
+          "actorId": "applicant",
+          "title": "Upload green card and tax evidence",
+          "note": "Copies here, originals at the interview",
+          "detail": {
+            "purpose": "Evidence uploaded now is evidence the officer is not writing a Request for Evidence about later. Each RFE adds roughly 60 days to the case, and the most common ones are for documents the applicant already had at filing.",
+            "actor": "The applicant",
+            "duration": "1-2 hours including scanning",
+            "systems": [
+              "myUSCIS document upload",
+              "IRS Get Transcript"
+            ],
+            "screen": {
+              "title": "N-400 — Evidence",
+              "elements": [
+                {
+                  "type": "heading",
+                  "label": "Upload your supporting documents"
+                },
+                {
+                  "type": "list",
+                  "label": "Required",
+                  "hint": "Both sides of the green card"
+                },
+                {
+                  "type": "list",
+                  "label": "If filing on the spouse rule",
+                  "hint": "Marriage certificate, spouse's proof of citizenship, three years of joint tax transcripts"
+                },
+                {
+                  "type": "list",
+                  "label": "If you have ever been arrested",
+                  "hint": "Certified court disposition for each incident"
+                },
+                {
+                  "type": "text",
+                  "label": "Translations",
+                  "hint": "Any non-English document needs a certified English translation"
+                },
+                {
+                  "type": "button",
+                  "label": "Upload files",
+                  "state": "focus",
+                  "target": "fee-gate"
+                }
+              ]
+            },
+            "options": [
+              {
+                "label": "Upload files",
+                "leadsTo": "fee-gate",
+                "why": "PDF or JPG, 6MB per file. Uploading more than the checklist asks for is harmless; uploading less invites a Request for Evidence."
+              },
+              {
+                "label": "Skip optional evidence",
+                "leadsTo": "fee-gate",
+                "why": "Defensible only for a clean five-year case with no arrests, no long trips and no name changes."
+              }
+            ],
+            "rules": [
+              "Never upload originals you cannot replace.",
+              "Certified translations need the translator's competence statement, not a notarization.",
+              "A legal name change needs the court order that produced it."
+            ],
+            "metrics": [
+              {
+                "label": "Cases delayed by an evidence request",
+                "value": "Roughly 1 in 8"
+              }
+            ]
+          }
+        },
+        {
+          "id": "fee-gate",
+          "type": "question",
+          "actorId": "applicant",
+          "title": "Can you pay the full $710 fee?",
+          "primaryLabel": "Yes",
+          "tag": "$710",
+          "branches": [
+            {
+              "label": "Reduced fee",
+              "tone": "info",
+              "note": "Under 400% of the poverty guidelines",
+              "steps": [
+                {
+                  "id": "prepare-reduced-fee-request",
+                  "type": "action",
+                  "actorId": "applicant",
+                  "title": "Switch to paper and complete Part 10",
+                  "detail": {
+                    "purpose": "The reduced fee is not a discount code, it is an evidentiary claim about household income that an intake officer either accepts or rejects on the spot. A thin request does not get adjudicated later — it gets the whole package returned.",
+                    "actor": "The applicant",
+                    "duration": "2-4 hours including gathering income documents",
+                    "systems": [
+                      "Paper Form N-400",
+                      "IRS transcripts",
+                      "USCIS lockbox"
+                    ],
+                    "procedure": [
+                      "Complete Part 10 of the paper form; Form I-942 was discontinued.",
+                      "Attach tax transcripts, pay statements or benefit letters for every earner.",
+                      "Pay the $380 electronically by card or ACH."
+                    ],
+                    "rules": [
+                      "Documented household income must be under 400% of the Federal Poverty Guidelines in force at filing.",
+                      "A roommate is not household; a spouse and dependent relatives are.",
+                      "USCIS does not accept a reduced fee request through the online portal."
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "continue"
+              }
+            },
+            {
+              "label": "Fee waiver",
+              "tone": "warn",
+              "note": "At or below 150%, or a means-tested benefit",
+              "steps": [
+                {
+                  "id": "prepare-fee-waiver",
+                  "type": "action",
+                  "actorId": "applicant",
+                  "title": "Prepare Form I-912 with evidence",
+                  "detail": {
+                    "purpose": "A waiver removes the single largest barrier to filing, and it is refused far more often for missing paperwork than for excess income. The point is to make the request unarguable on its face, because a returned waiver returns the entire N-400 with it.",
+                    "actor": "The applicant, often with a nonprofit legal services organization",
+                    "duration": "3-6 hours",
+                    "systems": [
+                      "Form I-912",
+                      "State benefits agency",
+                      "USCIS lockbox"
+                    ],
+                    "procedure": [
+                      "Choose one basis: a means-tested benefit, income at or below 150%, or documented hardship.",
+                      "Attach a current benefit award letter naming you — the strongest evidence by far.",
+                      "Send the I-912 and the N-400 together in one envelope."
+                    ],
+                    "rules": [
+                      "Medicaid, SNAP, TANF and SSI are the cleanest qualifying benefits.",
+                      "Benefits that are not income-tested, such as unemployment insurance, do not qualify.",
+                      "Free screening from an accredited nonprofit is worth an afternoon here."
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "continue"
+              }
+            }
+          ],
+          "detail": {
+            "purpose": "This gate decides the filing channel, not just the price. Both discount routes force the application onto paper, which costs the applicant instant receipting and digital evidence upload, so it is worth knowing before the form is finished rather than after.",
+            "actor": "The applicant",
+            "duration": "Minutes to decide, days to document a discount request",
+            "systems": [
+              "myUSCIS payment",
+              "Pay.gov",
+              "Federal Poverty Guidelines table"
+            ],
+            "screen": {
+              "title": "N-400 — Fee and payment",
+              "elements": [
+                {
+                  "type": "heading",
+                  "label": "How will you pay?"
+                },
+                {
+                  "type": "text",
+                  "label": "Standard fee",
+                  "hint": "$710 online, $760 by paper — biometrics included"
+                },
+                {
+                  "type": "badge",
+                  "label": "Reduced fee $380",
+                  "state": "default"
+                },
+                {
+                  "type": "badge",
+                  "label": "Fee waiver $0",
+                  "state": "default"
+                },
+                {
+                  "type": "text",
+                  "label": "Payment method",
+                  "hint": "Card via G-1450 or ACH via G-1650 — no checks since October 2025"
+                },
+                {
+                  "type": "button",
+                  "label": "Pay the full fee",
+                  "state": "default",
+                  "target": "submit-and-pay"
+                }
+              ]
+            },
+            "options": [
+              {
+                "label": "Pay the full fee",
+                "leadsTo": "submit-and-pay",
+                "why": "The fastest route and the one most applicants take. It keeps the case online, which means a receipt in days and every later notice in one place."
+              },
+              {
+                "label": "Request the reduced fee",
+                "leadsTo": "prepare-reduced-fee-request",
+                "why": "Household income under 400% of the Federal Poverty Guidelines halves the cost to $380."
+              },
+              {
+                "label": "Request a fee waiver",
+                "leadsTo": "prepare-fee-waiver",
+                "why": "Income at or below 150% of the guidelines, a means-tested benefit, or documented financial hardship."
+              }
+            ],
+            "rules": [
+              "Filing fees are never refunded once the case is receipted, including on denial.",
+              "Do not request both a reduced fee and a waiver; USCIS rejects filings that ask for both.",
+              "Current and former service members filing under INA 328 or 329 pay nothing at all."
+            ]
+          }
+        },
+        {
+          "id": "submit-and-pay",
+          "type": "output",
+          "actorId": "applicant",
+          "destination": "USCIS — myUSCIS or the lockbox",
+          "title": "Sign, submit, and pay electronically",
+          "note": "The filing date is the day USCIS receives it",
+          "detail": {
+            "purpose": "Submission fixes two things that cannot be changed afterwards: the date the statutory clocks are measured against, and which version of the civics test you will sit. Both are set by the receipt date, so a package that sits in the mail for a week has quietly moved them.",
+            "actor": "The applicant, signing under penalty of perjury",
+            "duration": "20 minutes online; 3-7 days in transit on paper",
+            "systems": [
+              "myUSCIS",
+              "Pay.gov",
+              "USPS or courier"
+            ],
+            "screen": {
+              "title": "N-400 — Review and submit",
+              "elements": [
+                {
+                  "type": "heading",
+                  "label": "Review your application"
+                },
+                {
+                  "type": "list",
+                  "label": "Alerts",
+                  "hint": "Unanswered questions are listed here and block submission"
+                },
+                {
+                  "type": "input",
+                  "label": "Digital signature",
+                  "hint": "Type your full legal name",
+                  "state": "focus"
+                },
+                {
+                  "type": "text",
+                  "label": "Payment",
+                  "hint": "$710 charged on submission; non-refundable"
+                },
+                {
+                  "type": "button",
+                  "label": "Submit application",
+                  "state": "default",
+                  "target": "check-acceptance"
+                }
+              ]
+            },
+            "options": [
+              {
+                "label": "Submit application",
+                "leadsTo": "check-acceptance",
+                "why": "One click, no undo. Everything after this is USCIS's clock rather than yours, which is why the review page is worth a slow read."
+              },
+              {
+                "label": "Download a copy first",
+                "leadsTo": "check-acceptance",
+                "why": "Essential rather than optional: the officer will interview you from this document months from now."
+              }
+            ],
+            "outputs": [
+              {
+                "label": "Filing receipt date",
+                "value": "Sets the statutory measuring date and the civics test version"
+              },
+              {
+                "label": "Payment confirmation",
+                "value": "G-1450 card authorization or G-1650 ACH debit"
+              }
+            ],
+            "rules": [
+              "USCIS stopped accepting paper checks on 28 October 2025; payment is card or ACH only.",
+              "Mail paper filings with tracking to the lockbox address in the current form instructions.",
+              "An application filed on or after 20 October 2025 draws the 2025 civics test."
+            ]
+          }
+        },
+        {
+          "id": "check-acceptance",
+          "type": "question",
+          "actorId": "applicant",
+          "title": "Did USCIS issue a receipt notice?",
+          "primaryLabel": "Yes",
+          "branches": [
+            {
+              "label": "Rejected and returned",
+              "tone": "error",
+              "note": "Never became a case; the fee was not taken",
+              "steps": [
+                {
+                  "id": "fix-rejection",
+                  "type": "action",
+                  "actorId": "applicant",
+                  "title": "Correct the rejection and refile",
+                  "detail": {
+                    "purpose": "The notice names exactly one defect, but the refiled package is examined fresh, so anything else that was marginal the first time will be caught the second. Treat the rejection as a free intake review rather than a single-line fix.",
+                    "actor": "The applicant",
+                    "duration": "1-2 weeks including reassembly",
+                    "systems": [
+                      "Paper Form N-400",
+                      "myUSCIS"
+                    ],
+                    "procedure": [
+                      "Read the one line naming the defect — usually fee, signature or form edition.",
+                      "Recheck the current form edition, fee and lockbox address before refiling.",
+                      "Switch to online filing if you can; it removes the whole class of paper rejections."
+                    ],
+                    "rules": [
+                      "Recheck dates that have moved since the first attempt.",
+                      "Use the form edition currently posted on uscis.gov, not the PDF downloaded weeks earlier."
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "goback",
+                "to": "complete-application",
+                "label": "Rebuild and refile"
+              }
+            }
+          ],
+          "detail": {
+            "purpose": "Rejection and denial are different animals and get confused constantly. A rejection means the package never became a case: no adjudication, no record, and the receipt date you were counting on is gone. Catching it in week three rather than month three is worth checking the mail for.",
+            "actor": "The applicant, watching the account and the mailbox",
+            "duration": "1-3 days online; 2-4 weeks on paper",
+            "systems": [
+              "myUSCIS",
+              "USPS Informed Delivery"
+            ],
+            "screen": {
+              "title": "myUSCIS — Your cases",
+              "elements": [
+                {
+                  "type": "heading",
+                  "label": "Case status"
+                },
+                {
+                  "type": "badge",
+                  "label": "Case was received",
+                  "state": "selected"
+                },
+                {
+                  "type": "text",
+                  "label": "Receipt number",
+                  "hint": "Three letters and ten digits"
+                },
+                {
+                  "type": "text",
+                  "label": "Form I-797C",
+                  "hint": "Extends green card validity for 24 months"
+                },
+                {
+                  "type": "button",
+                  "label": "View notice",
+                  "state": "default",
+                  "target": "track-case"
+                }
+              ]
+            },
+            "options": [
+              {
+                "label": "View notice",
+                "leadsTo": "track-case",
+                "why": "The I-797C is the document you show an employer or an airline while the green card expires underneath you."
+              },
+              {
+                "label": "Open the rejection letter",
+                "leadsTo": "fix-rejection",
+                "why": "A rejection arrives as the returned package with a short notice naming one defect."
+              }
+            ],
+            "rules": [
+              "A rejected filing is returned unfiled and the fee is not collected; a denied application keeps the fee.",
+              "The three most common rejections are the wrong fee, an unsigned form, and a discount request without income evidence.",
+              "The receipt notice extends an expiring green card for 24 months — carry both."
+            ]
+          }
+        },
+        {
+          "id": "track-case",
+          "type": "action",
+          "actorId": "applicant",
+          "title": "Save the receipt and turn on alerts",
+          "note": "Address changes must reach USCIS in 10 days",
+          "detail": {
+            "purpose": "From here the process is a sequence of mailed appointment notices, each with a fixed date and a short fuse. Missing one because it went to an old address is the single most common way a well-prepared case falls apart, and it is entirely preventable in the ten minutes this step takes.",
+            "actor": "The applicant",
+            "duration": "10 minutes now, 2 minutes a month afterwards",
+            "systems": [
+              "myUSCIS",
+              "Case status alerts",
+              "USPS mail forwarding"
+            ],
+            "screen": {
+              "title": "myUSCIS — Case settings",
+              "elements": [
+                {
+                  "type": "heading",
+                  "label": "Stay informed about your case"
+                },
+                {
+                  "type": "badge",
+                  "label": "Email alerts on",
+                  "state": "selected"
+                },
+                {
+                  "type": "badge",
+                  "label": "Text alerts on",
+                  "state": "selected"
+                },
+                {
+                  "type": "text",
+                  "label": "Processing time",
+                  "hint": "Check the field office estimate, not the national one"
+                },
+                {
+                  "type": "button",
+                  "label": "Update my address",
+                  "state": "default",
+                  "target": "track-case"
+                }
+              ]
+            },
+            "options": [
+              {
+                "label": "Update my address",
+                "leadsTo": "track-case",
+                "why": "Done through the account rather than a post office card, which does not forward USCIS notices reliably."
+              },
+              {
+                "label": "Submit a case inquiry",
+                "leadsTo": "track-case",
+                "why": "Only worth doing once the case is outside the published processing time for your field office."
+              }
+            ],
+            "rules": [
+              "Report any address change to USCIS within 10 days, through the account and Form AR-11.",
+              "Keep continuous residence and good moral character intact until the oath.",
+              "Field office processing times vary from 4 months to past 12."
+            ],
+            "metrics": [
+              {
+                "label": "Typical time from filing to interview",
+                "value": "4-10 months"
+              }
+            ]
+          }
+        }
+      ],
+      "end": {
+        "label": "Application filed and receipted",
+        "tone": "success",
+        "note": "Biometrics and interview notices follow"
+      }
+    },
+    {
+      "id": "eligibility-check",
+      "title": "Confirm naturalization eligibility",
+      "description": "The arithmetic behind the application: which statutory period applies, whether continuous residence survived every trip abroad, whether the physical presence days clear the threshold, and whether the character record holds. Run before a dollar is spent.",
+      "lens": "data",
+      "summary": {
+        "trigger": "A permanent resident sits down with their green card and travel history",
+        "outcome": "Every requirement confirmed against dated evidence and the earliest filing date known",
+        "owner": "The applicant, or a screening volunteer at a citizenship clinic",
+        "duration": "1-3 hours",
+        "frequency": "Once per applicant, sometimes repeated annually"
+      },
+      "start": {
+        "label": "Green card and passports on the table"
+      },
+      "steps": [
+        {
+          "id": "assemble-date-record",
+          "type": "input",
+          "actorId": "applicant",
+          "source": "Green card, passport stamps, CBP I-94 history, tax transcripts",
+          "title": "Assemble every date the counts need",
+          "note": "Land crossings never appear in I-94",
+          "detail": {
+            "purpose": "Every later count is arithmetic over one table of dates. Built once and built honestly, the rest of this workflow is mechanical; built from memory, it produces a confident wrong answer that survives right up until an officer opens the same records at the interview.",
+            "actor": "The applicant",
+            "duration": "45-90 minutes, plus mail time for missing records",
+            "systems": [
+              "i94.cbp.dhs.gov",
+              "Passport stamps",
+              "Airline and card statements"
+            ],
+            "schema": [
+              {
+                "field": "resident_since",
+                "type": "date",
+                "note": "Front of the green card — not the card issue date"
+              },
+              {
+                "field": "trip_departed",
+                "type": "date",
+                "note": "One row per absence of 24 hours or more"
+              },
+              {
+                "field": "trip_returned",
+                "type": "date",
+                "note": "Return stamps are frequently missing for land borders"
+              },
+              {
+                "field": "state_resident_since",
+                "type": "date",
+                "note": "Drives the three-month state residence rule"
+              },
+              {
+                "field": "tax_year_filed",
+                "type": "int",
+                "note": "Unfiled years are a character question, not a tax question"
+              }
+            ],
+            "sample": "resident_since,trip_departed,trip_returned,destination\n2021-04-19,2022-12-18,2023-01-09,Netherlands\n2021-04-19,2024-06-02,2024-11-27,Netherlands",
+            "queries": [
+              {
+                "label": "Longest single absence",
+                "code": "SELECT MAX(trip_returned - trip_departed) AS longest_days\n  FROM trips WHERE trip_departed >= :resident_since"
+              },
+              {
+                "label": "Trips missing a return date",
+                "code": "SELECT * FROM trips WHERE trip_returned IS NULL"
+              }
+            ],
+            "rules": [
+              "The CBP I-94 history records air and sea arrivals only.",
+              "Round trips under 24 hours belong in the table if you are unsure; over-reporting is harmless."
+            ]
+          }
+        },
+        {
+          "id": "select-statutory-period",
+          "type": "choice",
+          "actorId": "applicant",
+          "title": "Choose the statutory period",
+          "primaryLabel": "Five years as an LPR",
+          "branches": [
+            {
+              "label": "Three-year spouse rule",
+              "tone": "info",
+              "note": "Married to and living with a citizen for all three",
+              "steps": [
+                {
+                  "id": "verify-marital-union",
+                  "type": "action",
+                  "actorId": "applicant",
+                  "title": "Prove the marriage ran three years",
+                  "detail": {
+                    "purpose": "Officers test marital union as a lived fact across the entire period, not as a certificate. A gap of separation in year one is fatal to a three-year filing even where the marriage is intact today, and it is far cheaper to discover that here than at the interview.",
+                    "actor": "The applicant and the citizen spouse",
+                    "duration": "1-2 hours to assemble",
+                    "systems": [
+                      "IRS transcripts",
+                      "Bank and lease records",
+                      "Spouse's proof of citizenship"
+                    ],
+                    "schema": [
+                      {
+                        "field": "married_since",
+                        "type": "date",
+                        "note": "Must precede the filing date by three full years"
+                      },
+                      {
+                        "field": "spouse_citizen_since",
+                        "type": "date",
+                        "note": "Naturalization date, or birth for a born citizen"
+                      },
+                      {
+                        "field": "joint_evidence_years",
+                        "type": "int",
+                        "note": "Years covered by joint taxes, leases or accounts"
+                      }
+                    ],
+                    "queries": [
+                      {
+                        "label": "Years of joint evidence",
+                        "code": "SELECT count(DISTINCT tax_year) FROM joint_returns\n WHERE filing_status IN ('MFJ','MFS')"
+                      }
+                    ],
+                    "rules": [
+                      "Any period of legal separation breaks marital union and forces a five-year filing.",
+                      "Three years of joint tax transcripts is the evidence officers ask for first."
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "continue"
+              }
+            },
+            {
+              "label": "Military service",
+              "tone": "warn",
+              "note": "Different statute, no fee, Form N-426",
+              "steps": [
+                {
+                  "id": "check-military-basis",
+                  "type": "action",
+                  "actorId": "applicant",
+                  "title": "Check the 328 or 329 basis",
+                  "detail": {
+                    "purpose": "Military naturalization is a different statute with different clocks, no filing fee, and its own certification form, so running it through the civilian arithmetic here would produce answers that do not apply.",
+                    "actor": "The applicant, with the servicing personnel office",
+                    "duration": "2-6 weeks, driven by how fast Form N-426 is certified",
+                    "systems": [
+                      "Form N-426",
+                      "Service personnel office",
+                      "USCIS military help line"
+                    ],
+                    "schema": [
+                      {
+                        "field": "service_basis",
+                        "type": "enum",
+                        "note": "328 is peacetime service; 329 is during hostilities"
+                      },
+                      {
+                        "field": "n426_certified",
+                        "type": "bool",
+                        "note": "The gating document"
+                      }
+                    ],
+                    "queries": [
+                      {
+                        "label": "Service period covered",
+                        "code": "SELECT MIN(service_start), MAX(service_end) FROM service_records\n WHERE character_of_service = 'honorable'"
+                      }
+                    ],
+                    "rules": [
+                      "Applicants under section 329 need no minimum residence or presence period at all.",
+                      "The filing fee is zero for current and former service members.",
+                      "Separation under other than honorable conditions can void the basis."
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "end",
+                "label": "Files on the military basis",
+                "tone": "neutral",
+                "note": "Different clocks, no fee"
+              }
+            }
+          ],
+          "detail": {
+            "purpose": "The basis chosen here sets every threshold downstream — how many years of residence, how many days of presence, how far back character is examined — so getting it wrong invalidates all the arithmetic that follows rather than just one number.",
+            "actor": "The applicant",
+            "duration": "10 minutes",
+            "systems": [
+              "Green card",
+              "Marriage and spousal citizenship evidence"
+            ],
+            "schema": [
+              {
+                "field": "basis",
+                "type": "enum",
+                "note": "316 is the five-year rule; 319(a) the three-year spouse rule"
+              },
+              {
+                "field": "required_residence_years",
+                "type": "int",
+                "note": "5 under 316, 3 under 319(a)"
+              },
+              {
+                "field": "required_presence_days",
+                "type": "int",
+                "note": "913 under 316, 548 under 319(a)"
+              }
+            ],
+            "queries": [
+              {
+                "label": "Threshold for this basis",
+                "code": "SELECT required_residence_years, required_presence_days\n  FROM bases WHERE basis = :basis"
+              }
+            ],
+            "rules": [
+              "The three-year rule requires marital union with the same citizen for the entire three years.",
+              "A spouse who naturalized eighteen months ago cannot support a three-year filing today.",
+              "Widowed applicants lose the three-year rule unless the spouse died in qualifying service.",
+              "VAWA self-petitioners may use the three-year rule without the living-together requirement."
+            ]
+          }
+        },
+        {
+          "id": "count-continuous-residence",
+          "type": "action",
+          "actorId": "applicant",
+          "title": "Count residence from the LPR date",
+          "detail": {
+            "purpose": "Continuous residence and physical presence are two different tests that people routinely collapse into one. This one asks whether the United States stayed your home; a single long absence can fail it even when the day count is comfortably met.",
+            "actor": "The applicant",
+            "duration": "30-45 minutes",
+            "systems": [
+              "Trip table",
+              "Lease, employment and tax records"
+            ],
+            "schema": [
+              {
+                "field": "period_start",
+                "type": "date",
+                "note": "resident_since, or the return after any break"
+              },
+              {
+                "field": "period_end",
+                "type": "date",
+                "note": "The filing date; must hold through to the oath"
+              },
+              {
+                "field": "longest_absence_days",
+                "type": "int",
+                "note": "The number this test turns on"
+              }
+            ],
+            "queries": [
+              {
+                "label": "Absences over 180 days",
+                "code": "SELECT * FROM trips\n WHERE (trip_returned - trip_departed) > 180\n ORDER BY trip_departed"
+              }
+            ],
+            "rules": [
+              "Continuous residence is about keeping a US home, not merely re-entering before a deadline.",
+              "The requirement runs until the oath, so moving abroad after filing breaks it.",
+              "Filing a tax return as a nonresident is treated as an abandonment claim."
+            ]
+          }
+        },
+        {
+          "id": "check-trips",
+          "type": "question",
+          "actorId": "applicant",
+          "title": "Was every trip under six months?",
+          "primaryLabel": "Yes",
+          "tag": "180 days",
+          "branches": [
+            {
+              "label": "A trip of 6-12 months",
+              "tone": "warn",
+              "note": "Rebuttable presumption",
+              "steps": [
+                {
+                  "id": "assemble-rebuttal-evidence",
+                  "type": "action",
+                  "actorId": "applicant",
+                  "title": "Show you never left home",
+                  "detail": {
+                    "purpose": "The presumption is beaten with documents rather than explanation. Officers look for the ordinary residue of a life continuing in the United States while the applicant was away, and the absence of that residue is what actually sinks these cases.",
+                    "actor": "The applicant",
+                    "duration": "2-4 hours",
+                    "systems": [
+                      "IRS transcripts",
+                      "Payroll records",
+                      "Lease or mortgage statements"
+                    ],
+                    "schema": [
+                      {
+                        "field": "employment_maintained",
+                        "type": "bool",
+                        "note": "US employer kept the position open"
+                      },
+                      {
+                        "field": "home_maintained",
+                        "type": "bool",
+                        "note": "Lease or mortgage continued"
+                      },
+                      {
+                        "field": "family_remained",
+                        "type": "bool",
+                        "note": "Immediate family stayed in the US"
+                      },
+                      {
+                        "field": "resident_return_filed",
+                        "type": "bool",
+                        "note": "Full-year resident tax return filed"
+                      }
+                    ],
+                    "queries": [
+                      {
+                        "label": "Tax years filed as resident",
+                        "code": "SELECT tax_year, filing_status FROM returns\n WHERE tax_year BETWEEN :start AND :end"
+                      }
+                    ],
+                    "rules": [
+                      "The four factors are employment, home, family and tax filings. Two out of four is weak.",
+                      "Bring this evidence to the interview even if it was not uploaded."
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "continue"
+              }
+            },
+            {
+              "label": "A trip over 12 months",
+              "tone": "error",
+              "note": "Breaks residence outright",
+              "steps": [
+                {
+                  "id": "reset-residence-clock",
+                  "type": "action",
+                  "actorId": "applicant",
+                  "title": "Restart the clock from the return",
+                  "detail": {
+                    "purpose": "There is no argument to make here, only a date to calculate. The value of doing it now is that the applicant walks away with a real filing date instead of a vague sense that citizenship is off the table.",
+                    "actor": "The applicant",
+                    "duration": "15 minutes",
+                    "systems": [
+                      "Trip table",
+                      "Calendar"
+                    ],
+                    "schema": [
+                      {
+                        "field": "break_return_date",
+                        "type": "date",
+                        "note": "Return from the absence of a year or more"
+                      },
+                      {
+                        "field": "new_earliest_filing",
+                        "type": "date",
+                        "note": "Plus 4 years and 1 day, or 2 years and 1 day"
+                      }
+                    ],
+                    "queries": [
+                      {
+                        "label": "New earliest filing date",
+                        "code": "SELECT :break_return_date + INTERVAL '4 years 1 day'\n   AS earliest_filing"
+                      }
+                    ],
+                    "rules": [
+                      "Green card status survives; only the naturalization clock resets.",
+                      "A second long absence during the new period restarts it again."
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "end",
+                "label": "Not eligible yet — clock reset",
+                "tone": "neutral",
+                "note": "Recheck on the new date"
+              }
+            }
+          ],
+          "detail": {
+            "purpose": "Two bright lines sit inside this question and they behave very differently. Six months creates a presumption you can argue with; a year is not a presumption at all, and the only remedy is time. Knowing which side a trip falls on determines whether the case is filed now or in years.",
+            "actor": "The applicant",
+            "duration": "15 minutes once the trip table is built",
+            "systems": [
+              "Trip table",
+              "USCIS Policy Manual, Volume 12"
+            ],
+            "schema": [
+              {
+                "field": "absence_class",
+                "type": "enum",
+                "note": "under_180, 180_to_364, or 365_plus"
+              },
+              {
+                "field": "rebuttal_available",
+                "type": "bool",
+                "note": "Whether US ties held during the absence"
+              }
+            ],
+            "queries": [
+              {
+                "label": "Classify every absence",
+                "code": "SELECT trip_departed,\n  (trip_returned - trip_departed) AS days,\n  CASE WHEN (trip_returned - trip_departed) >= 365\n    THEN 'break' ELSE 'ok' END AS absence_class\n FROM trips"
+              }
+            ],
+            "rules": [
+              "An absence over 180 days but under a year raises a rebuttable presumption.",
+              "An absence of a year or more breaks residence outright.",
+              "Form N-470 can preserve residence for qualifying employment abroad, filed before leaving."
+            ]
+          }
+        },
+        {
+          "id": "count-physical-presence",
+          "type": "action",
+          "actorId": "applicant",
+          "title": "Add up days physically present",
+          "note": "Use the same table the N-400 will show",
+          "detail": {
+            "purpose": "This is the count officers redo by hand at the interview from the trips table on the form. Doing it here with the same inputs means the two totals agree; doing it from memory means discovering a shortfall after paying the fee.",
+            "actor": "The applicant",
+            "duration": "30 minutes",
+            "systems": [
+              "Trip table",
+              "USCIS early filing calculator"
+            ],
+            "schema": [
+              {
+                "field": "period_days",
+                "type": "int",
+                "note": "1826 for five years, 1096 for three"
+              },
+              {
+                "field": "days_abroad",
+                "type": "int",
+                "note": "Sum over the statutory period only"
+              },
+              {
+                "field": "days_present",
+                "type": "int",
+                "note": "period_days minus days_abroad"
+              }
+            ],
+            "sample": "period_days,days_abroad,days_present,threshold\n1826,742,1084,913",
+            "queries": [
+              {
+                "label": "Days present in the period",
+                "code": "SELECT 1826 - COALESCE(SUM(trip_returned - trip_departed),0)\n   AS days_present FROM trips\n WHERE trip_departed >= :period_start"
+              }
+            ],
+            "rules": [
+              "Threshold is 913 days under the five-year rule and 548 under the three-year rule.",
+              "Count only absences inside the statutory period.",
+              "Three months of state residence is a separate requirement checked at filing.",
+              "A margin under 30 days is worth waiting out; officers recount."
+            ]
+          }
+        },
+        {
+          "id": "presence-gate",
+          "type": "question",
+          "actorId": "applicant",
+          "title": "At least 913 days of presence?",
+          "primaryLabel": "Yes",
+          "tag": "913 days",
+          "branches": [
+            {
+              "label": "Short of the count",
+              "tone": "warn",
+              "note": "No rebuttal exists — only time",
+              "steps": [
+                {
+                  "id": "project-earliest-date",
+                  "type": "action",
+                  "actorId": "applicant",
+                  "title": "Project the date the count is met",
+                  "detail": {
+                    "purpose": "A shortfall today is a date, not a verdict. Computing it turns an indefinite wait into a planning constraint, which also tells the applicant how much travel they can afford between now and then.",
+                    "actor": "The applicant",
+                    "duration": "20 minutes",
+                    "systems": [
+                      "Trip table",
+                      "Calendar"
+                    ],
+                    "schema": [
+                      {
+                        "field": "shortfall_days",
+                        "type": "int",
+                        "note": "threshold minus days_present today"
+                      },
+                      {
+                        "field": "earliest_presence_date",
+                        "type": "date",
+                        "note": "Assuming no further travel"
+                      }
+                    ],
+                    "queries": [
+                      {
+                        "label": "Projected date",
+                        "code": "SELECT CURRENT_DATE + (:threshold - days_present)\n   AS earliest_presence_date FROM presence_summary"
+                      }
+                    ],
+                    "rules": [
+                      "The five-year window is rolling: old absences drop out as time passes.",
+                      "Every day abroad between now and filing pushes the date back by a day."
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "end",
+                "label": "Not eligible yet — recheck later",
+                "tone": "neutral",
+                "note": "Diary the projected date"
+              }
+            }
+          ],
+          "detail": {
+            "purpose": "The hardest gate to argue with and the easiest to fail by a handful of days. Unlike continuous residence, there is no rebuttal, no equitable exception and no discretion — the number either clears or it does not, and the fee is gone either way.",
+            "actor": "The applicant",
+            "duration": "5 minutes given the count",
+            "systems": [
+              "Trip table"
+            ],
+            "schema": [
+              {
+                "field": "days_present",
+                "type": "int",
+                "note": "Computed in the previous step"
+              },
+              {
+                "field": "threshold",
+                "type": "int",
+                "note": "913 or 548, from the chosen basis"
+              }
+            ],
+            "queries": [
+              {
+                "label": "Pass or fail",
+                "code": "SELECT days_present >= :threshold AS meets_presence\n  FROM presence_summary"
+              }
+            ],
+            "rules": [
+              "The 90-day early filing provision does not reach this requirement.",
+              "Denials for a presence shortfall are common and the fee is never refunded.",
+              "If the margin is thin, count twice from two different sources."
+            ]
+          }
+        },
+        {
+          "id": "screen-moral-character",
+          "type": "question",
+          "actorId": "applicant",
+          "title": "Is the character record clean?",
+          "primaryLabel": "Yes",
+          "branches": [
+            {
+              "label": "Records to disclose",
+              "tone": "warn",
+              "note": "Including dismissed and expunged matters",
+              "steps": [
+                {
+                  "id": "gather-dispositions",
+                  "type": "action",
+                  "actorId": "applicant",
+                  "title": "Order certified dispositions",
+                  "detail": {
+                    "purpose": "Officers do not take an applicant's account of what happened in court. They read the disposition, and a case with the paperwork in hand is decided at the interview instead of being continued for sixty days while the applicant fetches it.",
+                    "actor": "The applicant, or a lawyer ordering on their behalf",
+                    "duration": "2-8 weeks per jurisdiction",
+                    "systems": [
+                      "County and municipal court clerks",
+                      "State police records",
+                      "FBI identity history"
+                    ],
+                    "schema": [
+                      {
+                        "field": "incident_date",
+                        "type": "date",
+                        "note": "One row per arrest, citation or detention, anywhere"
+                      },
+                      {
+                        "field": "disposition",
+                        "type": "string",
+                        "note": "The court's own words"
+                      },
+                      {
+                        "field": "sentence_completed",
+                        "type": "bool",
+                        "note": "Including fines, classes and probation"
+                      }
+                    ],
+                    "queries": [
+                      {
+                        "label": "Incidents lacking a record",
+                        "code": "SELECT * FROM incidents\n WHERE certified_disposition IS NULL"
+                      }
+                    ],
+                    "rules": [
+                      "Expunged and sealed matters must still be disclosed on the N-400.",
+                      "An FBI identity history summary finds the arrests you have forgotten.",
+                      "Any criminal record deserves a consultation before filing."
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "continue"
+              }
+            },
+            {
+              "label": "A permanent bar applies",
+              "tone": "error",
+              "note": "Murder, or an aggravated felony after Nov 1990",
+              "steps": [
+                {
+                  "id": "stop-and-get-counsel",
+                  "type": "action",
+                  "actorId": "counsel",
+                  "title": "Stop and get an immigration lawyer",
+                  "detail": {
+                    "purpose": "Filing into a permanent bar does not merely fail. The application is a sworn account of the applicant's history delivered to the agency with the power to begin removal proceedings, and a conviction that bars naturalization frequently also makes the person deportable.",
+                    "actor": "An immigration attorney",
+                    "duration": "Weeks to months of case analysis",
+                    "systems": [
+                      "Court records",
+                      "Immigration counsel"
+                    ],
+                    "schema": [
+                      {
+                        "field": "conviction_date",
+                        "type": "date",
+                        "note": "The 29 November 1990 line governs the aggravated felony bar"
+                      },
+                      {
+                        "field": "offense_category",
+                        "type": "string",
+                        "note": "The immigration characterization differs from the state label"
+                      }
+                    ],
+                    "queries": [
+                      {
+                        "label": "Convictions in scope",
+                        "code": "SELECT * FROM incidents\n WHERE conviction_date >= DATE '1990-11-29'"
+                      }
+                    ],
+                    "rules": [
+                      "Do not file to see what happens. Withdrawal does not un-disclose anything.",
+                      "Post-conviction relief is a criminal-court matter, not a USCIS one.",
+                      "Accredited nonprofits can screen for free where a lawyer is out of reach."
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "end",
+                "label": "Not eligible — seek counsel",
+                "tone": "failure",
+                "note": "Filing can expose the green card too"
+              }
+            }
+          ],
+          "detail": {
+            "purpose": "Character is the requirement that turns a paperwork exercise into a legal question, and the one where a wrong self-assessment does more than delay a case. A disclosed problem is usually survivable; a concealed one can cost the green card as well as the citizenship.",
+            "actor": "The applicant, and a lawyer if anything below is a maybe",
+            "duration": "30 minutes to screen, weeks to gather records",
+            "systems": [
+              "Court records",
+              "IRS account transcripts",
+              "Selective Service"
+            ],
+            "schema": [
+              {
+                "field": "lookback_years",
+                "type": "int",
+                "note": "5 or 3 — but officers may consider conduct before it"
+              },
+              {
+                "field": "arrest_count",
+                "type": "int",
+                "note": "Including dismissed and expunged matters"
+              },
+              {
+                "field": "tax_years_unfiled",
+                "type": "int",
+                "note": "Any year with an obligation and no return"
+              },
+              {
+                "field": "selective_service_registered",
+                "type": "bool",
+                "note": "Men who lived in the US between 18 and 26"
+              }
+            ],
+            "queries": [
+              {
+                "label": "Unfiled years in the period",
+                "code": "SELECT tax_year FROM obligations o\n LEFT JOIN returns r USING (tax_year)\n WHERE r.tax_year IS NULL"
+              }
+            ],
+            "rules": [
+              "Conditional bars include most drug offenses, unlawful voting, a false claim to citizenship, and willful failure to file taxes.",
+              "Permanent bars are murder, and any aggravated felony conviction on or after 29 November 1990.",
+              "Since 2025 USCIS also weighs positive contributions in the character finding.",
+              "An outstanding tax debt is survivable with an installment agreement; an unfiled return is not."
+            ]
+          }
+        },
+        {
+          "id": "compute-filing-date",
+          "type": "action",
+          "actorId": "applicant",
+          "title": "Compute the earliest filing date",
+          "note": "Anniversary minus 90 calendar days",
+          "detail": {
+            "purpose": "The output of this whole workflow is one date. Everything upstream produces the inputs; this step turns them into the day the application may be received, which is the number the filing workflow is built around.",
+            "actor": "The applicant",
+            "duration": "10 minutes",
+            "systems": [
+              "USCIS early filing calculator",
+              "Calendar"
+            ],
+            "schema": [
+              {
+                "field": "anniversary",
+                "type": "date",
+                "note": "resident_since plus 5 years, or 3 under the spouse rule"
+              },
+              {
+                "field": "earliest_filing",
+                "type": "date",
+                "note": "anniversary minus 90 calendar days"
+              },
+              {
+                "field": "presence_ok_at_filing",
+                "type": "bool",
+                "note": "Must already be true — the 90 days do not help here"
+              }
+            ],
+            "sample": "resident_since,anniversary,earliest_filing\n2021-04-19,2026-04-19,2026-01-19",
+            "queries": [
+              {
+                "label": "Earliest filing date",
+                "code": "SELECT (:resident_since + INTERVAL '5 years')\n     - INTERVAL '90 days' AS earliest_filing"
+              }
+            ],
+            "rules": [
+              "Count 90 calendar days, not three months.",
+              "The date that matters is when USCIS receives the filing.",
+              "Filing one day early leads to rejection, and the fee is not returned."
+            ],
+            "metrics": [
+              {
+                "label": "Recommended margin",
+                "value": "7-14 days for paper, 1-2 online"
+              }
+            ]
+          }
+        }
+      ],
+      "end": {
+        "label": "Requirements met, filing date known",
+        "tone": "success"
+      }
+    },
+    {
+      "id": "interview-and-oath",
+      "title": "Biometrics, interview, tests and the oath",
+      "description": "The half of the process USCIS controls. Appointment notices arrive by mail and through the online account, each with a fixed date; the applicant's job is to show up prepared, answer honestly under oath, pass two tests, and swear in.",
+      "lens": "generic",
+      "summary": {
+        "trigger": "USCIS mails the biometrics appointment notice",
+        "outcome": "The applicant has taken the Oath of Allegiance and holds Form N-550",
+        "owner": "USCIS field office, with the applicant appearing in person",
+        "duration": "4-10 months from biometrics to ceremony",
+        "frequency": "About 800,000 people naturalize each year"
+      },
+      "phases": [
+        {
+          "label": "Prepare",
+          "from": "attend-biometrics",
+          "to": "prepare-interview-file"
+        },
+        {
+          "label": "Interview",
+          "from": "attend-interview",
+          "to": "decision-gate"
+        },
+        {
+          "label": "Swear in",
+          "from": "receive-oath-notice",
+          "to": "verify-certificate"
+        }
+      ],
+      "start": {
+        "label": "The biometrics notice arrives",
+        "note": "Form I-797C with a date and a location"
+      },
+      "steps": [
+        {
+          "id": "attend-biometrics",
+          "type": "action",
+          "actorId": "applicant",
+          "title": "Attend the biometrics appointment",
+          "tag": "ASC",
+          "detail": {
+            "purpose": "Fingerprints start the FBI background check, which is the long pole in the case. Nothing is scheduled until they clear, so a missed appointment does not cost a morning, it costs the position in the queue.",
+            "actor": "The applicant, in person at an Application Support Center",
+            "duration": "20-40 minutes on site; 4-8 weeks after filing",
+            "systems": [
+              "Application Support Center",
+              "FBI criminal history check",
+              "myUSCIS"
+            ],
+            "inputs": [
+              {
+                "label": "Appointment notice",
+                "value": "Form I-797C, printed"
+              },
+              {
+                "label": "Green card and photo ID",
+                "value": "Both required at check-in"
+              }
+            ],
+            "outputs": [
+              {
+                "label": "Fingerprints, photo and signature",
+                "value": "Sent to the FBI for the background check"
+              }
+            ],
+            "procedure": [
+              "Arrive within fifteen minutes of the printed time.",
+              "Bring the notice, the green card and a state ID.",
+              "Expect fingerprints, a photograph and a signature capture, then a stamp on the notice.",
+              "Keep the stamped notice; it is the only proof of appearance."
+            ],
+            "rules": [
+              "Reschedule through the account before the appointment date.",
+              "Failing to appear without rescheduling can lead to denial for abandonment.",
+              "USCIS sometimes reuses previous biometrics and waives the appointment."
+            ],
+            "failureModes": [
+              {
+                "when": "The center is closed for weather",
+                "then": "USCIS reschedules automatically; do not file an inquiry for two weeks"
+              },
+              {
+                "when": "The check returns a record you did not disclose",
+                "then": "Bring the certified disposition to the interview",
+                "step": "prepare-interview-file"
+              }
+            ]
+          }
+        },
+        {
+          "id": "study-for-tests",
+          "type": "action",
+          "actorId": "applicant",
+          "title": "Study the civics bank for your date",
+          "note": "Filed after 20 Oct 2025 means 128 questions",
+          "tag": "128 Q",
+          "detail": {
+            "purpose": "Which test you sit was fixed on the day USCIS received your application, and the two versions differ enough that studying the wrong bank is close to not studying. The window between biometrics and the interview is the study period, and it is usually months long.",
+            "actor": "The applicant, often through a free class at a library or nonprofit",
+            "duration": "20-60 hours of study over several months",
+            "systems": [
+              "USCIS Citizenship Resource Center",
+              "Local citizenship classes"
+            ],
+            "inputs": [
+              {
+                "label": "Filing date",
+                "value": "The only input that selects the test version"
+              }
+            ],
+            "outputs": [
+              {
+                "label": "Readiness on the correct bank",
+                "value": "128 questions for 2025-test filers, 100 for 2008"
+              }
+            ],
+            "procedure": [
+              "Check the receipt date. On or after 20 October 2025 means the 2025 test.",
+              "For the 2025 test, study all 128: the officer asks up to 20 and stops at 12 correct or 9 wrong.",
+              "For the 2008 test, study all 100: up to 10 asked, 6 correct to pass.",
+              "Practice reading one sentence aloud and writing one.",
+              "Relearn the answers that change, including current officeholders."
+            ],
+            "rules": [
+              "Applicants 65 or older with 20 years as an LPR answer 10 from a marked subset of 20.",
+              "The 50/20 and 55/15 exceptions allow the interview in another language, with your own interpreter.",
+              "Form N-648 can exempt an applicant with a qualifying disability.",
+              "Answers about current officeholders must be correct as of the interview date."
+            ],
+            "metrics": [
+              {
+                "label": "Historic first-attempt pass rate",
+                "value": "Around 90%"
+              }
+            ]
+          }
+        },
+        {
+          "id": "prepare-interview-file",
+          "type": "action",
+          "actorId": "applicant",
+          "title": "Assemble the originals to carry in",
+          "note": "Every copy uploaded is asked for as an original",
+          "detail": {
+            "purpose": "The interview is the only moment an officer can resolve a documentary gap in person. An applicant with the originals in a folder gets a decision the same day; one without them gets a continuation notice and another two months.",
+            "actor": "The applicant",
+            "duration": "2-3 hours the week before",
+            "systems": [
+              "Personal document file",
+              "Court clerks",
+              "IRS transcripts"
+            ],
+            "inputs": [
+              {
+                "label": "Interview notice",
+                "value": "Form I-797C with date, time and field office"
+              },
+              {
+                "label": "Identity documents",
+                "value": "Green card, state ID, all valid and expired passports"
+              }
+            ],
+            "outputs": [
+              {
+                "label": "Interview folder",
+                "value": "Originals plus trips taken since filing"
+              }
+            ],
+            "procedure": [
+              "Print the N-400 as filed and reread it end to end.",
+              "List every trip abroad taken since filing, with dates.",
+              "Collect originals of everything uploaded.",
+              "Add anything that changed since filing.",
+              "Arrange for a G-28 attorney to attend if the case has any complexity."
+            ],
+            "rules": [
+              "Three years of joint tax transcripts belong in the folder for every spouse filing.",
+              "Interpreters are permitted only for applicants who qualify for an English exception.",
+              "Arriving without the appointment notice can mean being turned away."
+            ],
+            "failureModes": [
+              {
+                "when": "An original cannot be located in time",
+                "then": "Attend anyway with proof it has been ordered; the officer can continue rather than deny",
+                "step": "decision-gate"
+              }
+            ]
+          }
+        },
+        {
+          "id": "attend-interview",
+          "type": "action",
+          "actorId": "uscis",
+          "title": "Answer the officer under oath",
+          "detail": {
+            "purpose": "The interview is simultaneously a verification of the application, an English proficiency assessment and the civics exam, conducted by one officer in about twenty minutes. Understanding that the conversation itself is the speaking test changes how an applicant should behave in it.",
+            "actor": "USCIS immigration services officer, with the applicant",
+            "duration": "15-30 minutes in the room; 1-3 hours on site",
+            "systems": [
+              "USCIS field office",
+              "Case management system"
+            ],
+            "inputs": [
+              {
+                "label": "The N-400 as filed",
+                "value": "The officer works line by line from this document"
+              },
+              {
+                "label": "Updated facts",
+                "value": "Trips, arrests, marital changes since filing"
+              }
+            ],
+            "outputs": [
+              {
+                "label": "Corrected application",
+                "value": "Changes marked in the officer's hand, initialled by you"
+              },
+              {
+                "label": "Form N-652",
+                "value": "Interview results notice, handed over before you leave"
+              }
+            ],
+            "procedure": [
+              "You are placed under oath at the start; everything after is sworn testimony.",
+              "The officer walks the application section by section.",
+              "The civics and English tests are given during the same sitting.",
+              "Ask the officer to repeat anything unclear — that is normal.",
+              "Read the corrections before initialling, then check the N-652 box."
+            ],
+            "rules": [
+              "Volunteering a correction is always better than being caught in one.",
+              "Speaking ability is judged from this conversation, not a separate test.",
+              "A representative may attend but may not answer for the applicant."
+            ],
+            "metrics": [
+              {
+                "label": "Cases decided the same day",
+                "value": "Roughly 4 in 5"
+              }
+            ]
+          }
+        },
+        {
+          "id": "tests-gate",
+          "type": "question",
+          "actorId": "uscis",
+          "title": "Did you pass the civics test?",
+          "primaryLabel": "Yes",
+          "branches": [
+            {
+              "label": "Failed a portion",
+              "tone": "warn",
+              "note": "One retest, 60-90 days out",
+              "steps": [
+                {
+                  "id": "attend-retest",
+                  "type": "action",
+                  "actorId": "applicant",
+                  "title": "Return for the retest",
+                  "detail": {
+                    "purpose": "The retest is narrower than the interview that produced it — only the failed portion is readministered — which makes the study period unusually well targeted. Most applicants who use the window properly pass the second time.",
+                    "actor": "The applicant, returning to the same field office",
+                    "duration": "10-20 minutes on site, after a 60-90 day wait",
+                    "systems": [
+                      "USCIS field office",
+                      "USCIS study materials"
+                    ],
+                    "inputs": [
+                      {
+                        "label": "Second appointment notice",
+                        "value": "The N-652 records which portion failed"
+                      }
+                    ],
+                    "outputs": [
+                      {
+                        "label": "Second N-652",
+                        "value": "The result that decides the application"
+                      }
+                    ],
+                    "procedure": [
+                      "Confirm exactly which portion is being retaken; nothing else is retested.",
+                      "Use the full window to study rather than the last week.",
+                      "Bring the notice, the green card and photo ID again."
+                    ],
+                    "rules": [
+                      "There is no third attempt on the same application.",
+                      "Missing the retest appointment is treated as a failure, not a delay."
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "goback",
+                "to": "attend-interview",
+                "label": "Retested at a second appointment"
+              }
+            }
+          ],
+          "detail": {
+            "purpose": "The tests carry a second chance that most applicants do not know exists, and knowing it exists changes how a bad first attempt feels. Only the failed portion is retaken, and only once — the second failure is the one that becomes a denial.",
+            "actor": "USCIS immigration services officer",
+            "duration": "5-10 minutes inside the interview",
+            "systems": [
+              "USCIS field office",
+              "Civics question bank"
+            ],
+            "inputs": [
+              {
+                "label": "Test version",
+                "value": "Set by the filing date"
+              }
+            ],
+            "outputs": [
+              {
+                "label": "Result per portion",
+                "value": "Reading, writing, speaking and civics scored separately"
+              }
+            ],
+            "procedure": [
+              "The officer asks civics questions aloud and stops as soon as the outcome is decided.",
+              "Reading and writing are one sentence each, from a published vocabulary list.",
+              "A failed portion is recorded on the N-652 with the retest window on it."
+            ],
+            "rules": [
+              "2025 test: 20 questions from 128, 12 correct to pass.",
+              "2008 test: up to 10 questions from 100, 6 correct to pass.",
+              "Exactly one retest is offered, 60 to 90 days after the interview.",
+              "Failing the same portion twice results in denial."
+            ]
+          }
+        },
+        {
+          "id": "decision-gate",
+          "type": "question",
+          "actorId": "uscis",
+          "title": "Did the officer grant it?",
+          "primaryLabel": "Yes",
+          "branches": [
+            {
+              "label": "Continued (N-14)",
+              "tone": "warn",
+              "note": "Missing documents or a failed test",
+              "steps": [
+                {
+                  "id": "respond-to-n14",
+                  "type": "action",
+                  "actorId": "applicant",
+                  "title": "Send the documents in 30 days",
+                  "detail": {
+                    "purpose": "A continuation is the officer keeping the case alive rather than denying it, and the deadline is the price. Late or partial responses convert a recoverable case into a denial that then costs a hearing fee to unwind.",
+                    "actor": "The applicant",
+                    "duration": "Within the 30 days printed on the notice",
+                    "systems": [
+                      "Form N-14",
+                      "myUSCIS document upload"
+                    ],
+                    "inputs": [
+                      {
+                        "label": "Form N-14",
+                        "value": "Lists each item requested and the deadline"
+                      }
+                    ],
+                    "outputs": [
+                      {
+                        "label": "Response package",
+                        "value": "Every listed item, with a copy of the N-14 on top"
+                      }
+                    ],
+                    "procedure": [
+                      "Answer every numbered item, even ones you believe were already provided.",
+                      "Send by the method the notice specifies, with tracking.",
+                      "Upload through the account as well where the option exists."
+                    ],
+                    "rules": [
+                      "Send exactly what is asked for; extra material can raise new questions.",
+                      "If an item cannot be obtained, send proof it was requested plus an explanation."
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "continue"
+              }
+            },
+            {
+              "label": "Denied",
+              "tone": "error",
+              "note": "30 days to ask for a hearing",
+              "steps": [
+                {
+                  "id": "read-denial-notice",
+                  "type": "action",
+                  "actorId": "applicant",
+                  "title": "Read the written denial in full",
+                  "detail": {
+                    "purpose": "The written notice, which arrives after the N-652, is the only document that states the legal ground and starts the appeal clock. Everything in the hearing request is built from it, and the deadline runs from its date whether or not it has been read.",
+                    "actor": "The applicant, ideally with counsel",
+                    "duration": "1-2 hours, within days of receipt",
+                    "systems": [
+                      "USCIS denial notice",
+                      "Form N-336"
+                    ],
+                    "inputs": [
+                      {
+                        "label": "Denial notice",
+                        "value": "States the ground, the facts relied on, and the deadline"
+                      }
+                    ],
+                    "outputs": [
+                      {
+                        "label": "Identified ground",
+                        "value": "Presence, residence, character, testing, or documents"
+                      }
+                    ],
+                    "procedure": [
+                      "Diary the deadline the day the notice arrives.",
+                      "Separate factual errors, which a hearing can fix, from timing shortfalls, which only waiting can fix.",
+                      "Decide between a hearing and a fresh application before spending money."
+                    ],
+                    "rules": [
+                      "The denial does not affect permanent resident status by itself.",
+                      "The fee already paid is not refunded or credited."
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "goto",
+                "workflow": "n336-hearing",
+                "step": "parse-denial-notice",
+                "label": "Ask for a hearing"
+              }
+            }
+          ],
+          "detail": {
+            "purpose": "Three outcomes hide behind one notice, and they have very different consequences. A continuation is a request for more; a denial starts a 30-day clock. Applicants who read the N-652 as pass or fail miss the middle case, which is the most common non-approval.",
+            "actor": "USCIS immigration services officer",
+            "duration": "Same day, or up to 120 days for a reserved decision",
+            "systems": [
+              "Form N-652",
+              "myUSCIS case status"
+            ],
+            "inputs": [
+              {
+                "label": "Form N-652",
+                "value": "One of three boxes: granted, continued, or denied"
+              }
+            ],
+            "outputs": [
+              {
+                "label": "Decision",
+                "value": "Approval routes to oath scheduling; denial to the hearing workflow"
+              }
+            ],
+            "procedure": [
+              "Read the marked box before leaving the building.",
+              "For a continuation, note the documents requested and the deadline.",
+              "For a denial, keep the written notice that follows."
+            ],
+            "rules": [
+              "A case may be continued twice at most.",
+              "If USCIS does not decide within 120 days, a federal district court may decide the case.",
+              "Approval is not citizenship — nothing changes until the oath."
+            ]
+          }
+        },
+        {
+          "id": "receive-oath-notice",
+          "type": "input",
+          "actorId": "uscis",
+          "source": "Form N-445, mailed or posted to the account",
+          "title": "Receive the oath ceremony notice",
+          "note": "Answer the back page honestly on the day",
+          "detail": {
+            "purpose": "The oath notice is not just a calendar invitation. Its reverse side is a sworn questionnaire covering everything since the interview, and it is collected at the door — which is where a case can still come apart after approval.",
+            "actor": "USCIS, with the applicant confirming attendance",
+            "duration": "Arrives 2-8 weeks after approval",
+            "systems": [
+              "USPS",
+              "myUSCIS",
+              "Field office or federal court"
+            ],
+            "inputs": [
+              {
+                "label": "Form N-445",
+                "value": "Date, time, location, and the questionnaire"
+              }
+            ],
+            "outputs": [
+              {
+                "label": "Confirmed ceremony slot",
+                "value": "Judicial or administrative"
+              }
+            ],
+            "procedure": [
+              "Check the location carefully — ceremonies are often held away from the field office.",
+              "Complete the questionnaire the day of the ceremony, not weeks earlier.",
+              "Answer yes where yes is true: travel, arrests, marriage since the interview.",
+              "If the date is impossible, return the notice with a written explanation."
+            ],
+            "rules": [
+              "A court-ordered name change requires a judicial ceremony, which adds weeks.",
+              "Bring the green card — it is surrendered at check-in and not returned.",
+              "Repeatedly failing to appear can lead to denial after approval."
+            ],
+            "failureModes": [
+              {
+                "when": "The notice never arrives",
+                "then": "Submit a case inquiry and check the address on file",
+                "step": "verify-certificate"
+              }
+            ]
+          }
+        },
+        {
+          "id": "attend-oath-ceremony",
+          "type": "action",
+          "actorId": "applicant",
+          "title": "Take the Oath of Allegiance",
+          "tag": "Citizen",
+          "detail": {
+            "purpose": "This is the moment citizenship begins — not the approval, not the certificate printing. Everything the applicant has been permitted to do as a permanent resident up to the door of this room becomes a different set of rights the moment the oath is administered.",
+            "actor": "The applicant, with an officer or a federal judge administering",
+            "duration": "1-3 hours on site, of which the oath is minutes",
+            "systems": [
+              "Field office or federal courthouse",
+              "USCIS records"
+            ],
+            "inputs": [
+              {
+                "label": "Form N-445 completed",
+                "value": "Collected at check-in and reviewed"
+              },
+              {
+                "label": "Green card",
+                "value": "Surrendered at check-in"
+              }
+            ],
+            "outputs": [
+              {
+                "label": "Oath administered",
+                "value": "Citizenship takes effect immediately"
+              },
+              {
+                "label": "Certificate of Naturalization",
+                "value": "Form N-550, handed out after the oath"
+              }
+            ],
+            "procedure": [
+              "Arrive at the check-in time on the notice, not the ceremony time.",
+              "Hand in the N-445 and the green card, ready to explain any yes answer.",
+              "Stand and recite the oath with the group when directed.",
+              "Collect the certificate and stay seated until dismissed."
+            ],
+            "rules": [
+              "Any change since the interview must be disclosed at check-in.",
+              "Modified oaths are available on religious grounds where requested in advance.",
+              "Guest and photography policies vary by venue."
+            ]
+          }
+        },
+        {
+          "id": "verify-certificate",
+          "type": "action",
+          "actorId": "applicant",
+          "title": "Check every field before leaving",
+          "note": "Free today, Form N-565 later",
+          "detail": {
+            "purpose": "The certificate is the document every later credential is built from, and USCIS will correct its own typographical error at the ceremony for nothing. The same fix afterwards is an application, a fee and months without the document.",
+            "actor": "The new citizen",
+            "duration": "5 minutes at the ceremony",
+            "systems": [
+              "USCIS",
+              "Social Security Administration",
+              "Department of State"
+            ],
+            "inputs": [
+              {
+                "label": "Certificate of Naturalization",
+                "value": "Name, date of birth, former nationality, A-number, photo"
+              }
+            ],
+            "outputs": [
+              {
+                "label": "Verified certificate",
+                "value": "Corrections made on the spot, if any"
+              },
+              {
+                "label": "Follow-on tasks",
+                "value": "Passport, Social Security, voter registration"
+              }
+            ],
+            "procedure": [
+              "Check the spelling of your name, date of birth and photograph before leaving.",
+              "Apply for a US passport with Form DS-11 soon after.",
+              "Update your record with the Social Security Administration in person.",
+              "Register to vote — many ceremonies have a table in the room.",
+              "Store the certificate flat and unlaminated."
+            ],
+            "rules": [
+              "The certificate is federal property; laminating it invalidates it.",
+              "Replacing a lost certificate means Form N-565 and a long wait.",
+              "Copies are acceptable for most purposes; the original rarely leaves the house."
+            ],
+            "metrics": [
+              {
+                "label": "Typical passport issuance",
+                "value": "4-8 weeks by routine service"
+              }
+            ]
+          }
+        }
+      ],
+      "end": {
+        "label": "Sworn in — certificate in hand",
+        "tone": "success"
+      }
+    },
+    {
+      "id": "n336-hearing",
+      "title": "Request a hearing on a denial",
+      "description": "The administrative review after a denial: a different officer, of equal or higher grade, looks at the case again from scratch. Entered from the interview workflow when the decision notice says denied.",
+      "lens": "generic",
+      "summary": {
+        "trigger": "A written denial notice arrives after the interview",
+        "outcome": "A reviewing officer has decided in writing, reversing the denial or upholding it",
+        "owner": "The applicant, usually with an immigration attorney",
+        "duration": "6-12 months from filing to decision",
+        "frequency": "A small fraction of denials; most applicants refile"
+      },
+      "start": {
+        "label": "The written denial arrives",
+        "note": "The 30-day clock starts on the notice date"
+      },
+      "steps": [
+        {
+          "id": "parse-denial-notice",
+          "type": "action",
+          "actorId": "applicant",
+          "title": "Identify the exact ground",
+          "note": "Timing cannot be argued; facts can",
+          "detail": {
+            "purpose": "The choice between a hearing request and a fresh application turns entirely on the ground. Requesting a hearing on a physical presence shortfall spends money to be told the arithmetic again; requesting one on a mischaracterized arrest can work.",
+            "actor": "The applicant, ideally with counsel reading alongside",
+            "duration": "1-3 hours",
+            "systems": [
+              "USCIS denial notice",
+              "The N-400 as filed",
+              "Court and travel records"
+            ],
+            "inputs": [
+              {
+                "label": "Denial notice",
+                "value": "Names the ground, the facts relied on, and the deadline"
+              }
+            ],
+            "outputs": [
+              {
+                "label": "Classification",
+                "value": "Reversible, curable with evidence, or purely a matter of time"
+              }
+            ],
+            "procedure": [
+              "Write down the deadline date first, before analysing anything.",
+              "Match each factual assertion against the record you hold.",
+              "Classify the ground: arithmetic, documentary, character, or a test failure.",
+              "Compare the cost of a hearing against refiling a fresh N-400."
+            ],
+            "rules": [
+              "A test failure denial is not usually worth a hearing.",
+              "Character denials turning on a mischaracterized conviction are the strongest candidates.",
+              "The denial does not remove permanent resident status on its own."
+            ],
+            "failureModes": [
+              {
+                "when": "The notice is vague about the ground",
+                "then": "File a FOIA request for the record while the hearing request goes in on time",
+                "step": "assemble-rebuttal"
+              }
+            ]
+          }
+        },
+        {
+          "id": "deadline-gate",
+          "type": "question",
+          "actorId": "applicant",
+          "title": "Within 30 days of the denial?",
+          "primaryLabel": "Yes",
+          "tag": "30 days",
+          "branches": [
+            {
+              "label": "Deadline has passed",
+              "tone": "error",
+              "note": "No extension mechanism exists",
+              "steps": [
+                {
+                  "id": "refile-new-n400",
+                  "type": "action",
+                  "actorId": "applicant",
+                  "title": "File a fresh N-400 instead",
+                  "detail": {
+                    "purpose": "A new application is a clean adjudication rather than a review of the old one, which is an advantage when the original problem was curable. It costs a second full fee and restarts the queue, so it is worth fixing the underlying issue first.",
+                    "actor": "The applicant",
+                    "duration": "Weeks to prepare; the ordinary timeline afterwards",
+                    "systems": [
+                      "myUSCIS",
+                      "Form N-400"
+                    ],
+                    "inputs": [
+                      {
+                        "label": "The prior denial",
+                        "value": "Must be disclosed on the new application"
+                      }
+                    ],
+                    "outputs": [
+                      {
+                        "label": "New receipted case",
+                        "value": "New receipt date, new fee, new interview"
+                      }
+                    ],
+                    "procedure": [
+                      "Fix the ground of the first denial before filing anything.",
+                      "Disclose the prior denial; the officer has the old file regardless.",
+                      "Re-run the eligibility counts from scratch."
+                    ],
+                    "rules": [
+                      "There is no limit on the number of N-400s an applicant may file.",
+                      "The prior fee is not credited toward the new one."
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "end",
+                "label": "Refiling instead",
+                "tone": "neutral",
+                "note": "New fee, new receipt date"
+              }
+            }
+          ],
+          "detail": {
+            "purpose": "This deadline is jurisdictional rather than administrative — a late request is not weighed and rejected, it is simply not accepted. Everything else in this workflow depends on clearing it, which is why it sits before the evidence work rather than after.",
+            "actor": "The applicant",
+            "duration": "Minutes to check the notice date",
+            "systems": [
+              "Denial notice",
+              "Calendar"
+            ],
+            "inputs": [
+              {
+                "label": "Date on the denial notice",
+                "value": "Not the date it was opened"
+              }
+            ],
+            "outputs": [
+              {
+                "label": "Filing window",
+                "value": "30 days, or 33 if mailed"
+              }
+            ],
+            "procedure": [
+              "Count from the date printed on the decision.",
+              "Add three days only if the decision was served by mail.",
+              "File even if the brief is not finished; evidence can follow, the deadline cannot."
+            ],
+            "rules": [
+              "There is no extension mechanism for this deadline.",
+              "Filing a new N-400 remains available at any time and is often faster."
+            ]
+          }
+        },
+        {
+          "id": "assemble-rebuttal",
+          "type": "action",
+          "actorId": "applicant",
+          "title": "Assemble evidence for the ground",
+          "detail": {
+            "purpose": "The reviewing officer decides from the file plus whatever is added, so this step is where the case is actually won or lost. Evidence that addresses the stated ground directly beats a larger volume of material that argues around it.",
+            "actor": "The applicant and counsel",
+            "duration": "2-4 weeks",
+            "systems": [
+              "Court clerks",
+              "IRS transcripts",
+              "Employer and travel records"
+            ],
+            "inputs": [
+              {
+                "label": "The ground as stated",
+                "value": "The organising principle for the package"
+              }
+            ],
+            "outputs": [
+              {
+                "label": "Rebuttal package",
+                "value": "A short brief with numbered exhibits"
+              }
+            ],
+            "procedure": [
+              "Pair each factual assertion in the denial with one exhibit.",
+              "Obtain certified rather than photocopied court records.",
+              "Write a brief that is short and specific — two pages beats twenty.",
+              "Number the exhibits and reference them by number."
+            ],
+            "rules": [
+              "New evidence is allowed; this is a fresh look, not a review confined to the record.",
+              "Evidence contradicting a sworn statement needs an explanation, not just a document.",
+              "Anything not in English needs a certified translation."
+            ]
+          }
+        },
+        {
+          "id": "file-n336",
+          "type": "action",
+          "actorId": "applicant",
+          "title": "File Form N-336 and pay",
+          "tag": "$780",
+          "detail": {
+            "purpose": "The form is short and the fee is substantial, so this is the decision point where an applicant commits to review rather than refiling. Filing it preserves the original case and its earlier priority in every sense that matters.",
+            "actor": "The applicant, or counsel filing with Form G-28",
+            "duration": "1-2 hours to file",
+            "systems": [
+              "Form N-336",
+              "myUSCIS or the lockbox",
+              "Pay.gov"
+            ],
+            "inputs": [
+              {
+                "label": "Form N-336",
+                "value": "Request for a Hearing on a Decision in Naturalization Proceedings"
+              },
+              {
+                "label": "Fee",
+                "value": "$780 online or $830 by paper"
+              }
+            ],
+            "outputs": [
+              {
+                "label": "Receipt notice",
+                "value": "Form I-797C confirming the request is pending"
+              }
+            ],
+            "procedure": [
+              "Attach the denial notice and the rebuttal brief.",
+              "Pay electronically by card or ACH.",
+              "Send with tracking if filing on paper.",
+              "Diary 180 days from filing as the point to inquire."
+            ],
+            "rules": [
+              "Fee waivers are available for this form using Form I-912.",
+              "Applicants filing under the military provisions pay no fee."
+            ]
+          }
+        },
+        {
+          "id": "attend-hearing",
+          "type": "action",
+          "actorId": "uscis",
+          "title": "Present to a different officer",
+          "detail": {
+            "purpose": "The hearing is a genuine second look rather than an appeal on the record: a different officer, of equal or higher grade than the first, may take new evidence and re-examine anything. Treating it as a fresh interview rather than an argument about the last one produces better outcomes.",
+            "actor": "A reviewing USCIS officer, with the applicant and counsel",
+            "duration": "20-45 minutes, scheduled within 180 days",
+            "systems": [
+              "USCIS field office",
+              "Video conferencing in some offices"
+            ],
+            "inputs": [
+              {
+                "label": "The full case file",
+                "value": "Application, interview notes, denial and rebuttal"
+              }
+            ],
+            "outputs": [
+              {
+                "label": "Hearing record",
+                "value": "The officer's notes and any evidence taken"
+              }
+            ],
+            "procedure": [
+              "Bring originals of every exhibit already filed.",
+              "Be ready to be retested if the denial was test-related.",
+              "Answer the ground directly rather than relitigating the first interview.",
+              "Note anything the officer says is still missing and send it that week."
+            ],
+            "rules": [
+              "The reviewing officer must not be the one who issued the denial.",
+              "Review is de novo — the officer may reach a different conclusion on any issue.",
+              "Counsel may participate; the applicant still answers the substantive questions."
+            ],
+            "failureModes": [
+              {
+                "when": "No hearing within 180 days",
+                "then": "Submit a case inquiry citing the regulatory timeframe",
+                "step": "receive-hearing-decision"
+              }
+            ]
+          }
+        },
+        {
+          "id": "receive-hearing-decision",
+          "type": "question",
+          "actorId": "uscis",
+          "title": "Did the officer reverse it?",
+          "primaryLabel": "Yes",
+          "branches": [
+            {
+              "label": "Denial upheld",
+              "tone": "error",
+              "note": "District court review remains",
+              "steps": [
+                {
+                  "id": "file-district-court-petition",
+                  "type": "action",
+                  "actorId": "counsel",
+                  "title": "Petition the district court",
+                  "detail": {
+                    "purpose": "District court review is the only forum that can grant the application over the agency's objection, and it is a real trial-level proceeding rather than a paperwork step. Knowing that it exists is what keeps a wrong denial from being final.",
+                    "actor": "An immigration litigator, with the applicant as petitioner",
+                    "duration": "6-18 months",
+                    "systems": [
+                      "US district court",
+                      "Immigration counsel"
+                    ],
+                    "inputs": [
+                      {
+                        "label": "The exhausted record",
+                        "value": "The N-336 decision is what makes the case reviewable"
+                      }
+                    ],
+                    "outputs": [
+                      {
+                        "label": "Court judgment",
+                        "value": "The court may decide the application itself"
+                      }
+                    ],
+                    "procedure": [
+                      "Retain counsel who litigates naturalization cases specifically.",
+                      "File in the district where the applicant resides.",
+                      "Be prepared for resolution on a stipulated record rather than at trial."
+                    ],
+                    "rules": [
+                      "Administrative remedies must be exhausted first.",
+                      "Refiling a new N-400 in parallel does not waive the court claim."
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "end",
+                "label": "Denial stands after review",
+                "tone": "failure",
+                "note": "District court remains available"
+              }
+            }
+          ],
+          "detail": {
+            "purpose": "This decision ends the administrative road in one direction or the other. A reversal puts the case straight back into oath scheduling; an affirmance moves the dispute out of the agency and into federal court, which is a different kind of undertaking entirely.",
+            "actor": "The reviewing officer, deciding in writing",
+            "duration": "Weeks to a few months after the hearing",
+            "systems": [
+              "USCIS decision notice",
+              "myUSCIS"
+            ],
+            "inputs": [
+              {
+                "label": "Hearing record and rebuttal",
+                "value": "Everything the officer weighed"
+              }
+            ],
+            "outputs": [
+              {
+                "label": "Written decision",
+                "value": "Reversal returning the case to oath scheduling, or affirmance"
+              }
+            ],
+            "procedure": [
+              "Read the decision for the ground actually decided.",
+              "On a reversal, confirm the case has moved to oath scheduling.",
+              "On an affirmance, diary the district court window immediately."
+            ],
+            "rules": [
+              "An applicant whose N-336 is denied may seek de novo review in district court.",
+              "The court reviews the application itself, not merely the agency's reasoning.",
+              "Filing a new N-400 remains available regardless."
+            ]
+          }
+        },
+        {
+          "id": "wait-for-oath",
+          "type": "wait",
+          "actorId": "uscis",
+          "duration": "2-8 weeks",
+          "title": "Wait for the reissued oath notice",
+          "detail": {
+            "purpose": "A reversal does not schedule a ceremony by itself; the case rejoins the ordinary oath queue and moves at that queue's pace. Naming the wait keeps applicants from assuming the reversal was lost when nothing arrives for a month.",
+            "actor": "USCIS scheduling, with the applicant watching",
+            "duration": "2-8 weeks, longer for a judicial ceremony",
+            "systems": [
+              "myUSCIS",
+              "USPS",
+              "Field office scheduling"
+            ],
+            "inputs": [
+              {
+                "label": "Reversal decision",
+                "value": "Returns the case to oath scheduling"
+              }
+            ],
+            "outputs": [
+              {
+                "label": "Form N-445",
+                "value": "The oath ceremony notice"
+              }
+            ],
+            "procedure": [
+              "Confirm the address on file the week the reversal arrives.",
+              "Watch the account for a status change to oath scheduling.",
+              "Submit a case inquiry if nothing arrives within eight weeks."
+            ],
+            "rules": [
+              "Continuous residence and good moral character must hold until the oath.",
+              "A court-ordered name change still forces a judicial ceremony."
+            ]
+          }
+        }
+      ],
+      "end": {
+        "label": "Denial reversed, oath scheduled",
+        "tone": "success"
+      }
+    }
+  ]
+}

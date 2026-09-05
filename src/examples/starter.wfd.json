@@ -1,0 +1,172 @@
+{
+  "wfd": 1,
+  "title": "Shipping a hotfix",
+  "subtitle": "A small worked example you can edit",
+  "description": "A deliberately small document, here so you can press Build and watch the loop close before you write your own. Edit any title, press Build again, and the page redraws.",
+  "meta": { "author": "workflowForge", "tags": ["example"] },
+  "actors": [
+    { "id": "oncall", "name": "On-call engineer", "short": "OPS" }
+  ],
+  "workflows": [
+    {
+      "id": "hotfix",
+      "title": "Ship a hotfix",
+      "description": "A bug is live and someone has to fix it now. This is the shortest path from report to deployed, and the two ways it usually goes wrong.",
+      "lens": "ops",
+      "summary": {
+        "trigger": "A bug is reported against production",
+        "outcome": "The fix is live and the reporter has been told",
+        "owner": "Whoever is on call",
+        "duration": "Under an hour"
+      },
+      "start": { "label": "Bug reported" },
+      "steps": [
+        {
+          "id": "reproduce",
+          "type": "action",
+          "actorId": "oncall",
+          "title": "Reproduce it against production",
+          "note": "Same data, same version",
+          "tag": "10 min",
+          "detail": {
+            "purpose": "A fix for a bug you have not seen is a guess. Reproducing first is what separates a hotfix from a second incident.",
+            "actor": "On-call engineer",
+            "procedure": [
+              "Work from the reporter's exact steps before improvising.",
+              "Check the deployed version, not `main` — the bug may already be fixed.",
+              "If it only reproduces for one account, the cause is data, not code."
+            ],
+            "failureModes": [
+              { "when": "It will not reproduce", "then": "Ask the reporter for a screen recording rather than guessing", "step": "reproduce" }
+            ]
+          }
+        },
+        {
+          "id": "scope",
+          "type": "question",
+          "actorId": "oncall",
+          "title": "Is the fix small and obvious?",
+          "note": "One file, no schema change",
+          "primaryLabel": "Yes",
+          "branches": [
+            {
+              "label": "No",
+              "tone": "warn",
+              "note": "Needs design or touches data",
+              "steps": [
+                {
+                  "id": "mitigate",
+                  "type": "action",
+                  "actorId": "oncall",
+                  "title": "Mitigate instead of fixing",
+                  "note": "Flag off, roll back, or rate limit",
+                  "detail": {
+                    "purpose": "A big change under time pressure is how a bug becomes an outage. Buy time first, then fix it properly in the normal flow.",
+                    "procedure": [
+                      "Turn the feature off if there is a flag.",
+                      "Roll back to the last known good release if there is not.",
+                      "Say in the incident channel which one you did."
+                    ]
+                  }
+                }
+              ],
+              "exit": { "type": "end", "label": "Mitigated, fix scheduled", "tone": "neutral" }
+            }
+          ],
+          "detail": {
+            "purpose": "The only decision that matters here. A hotfix is a promise that the change is too small to go wrong; if it is not, do not make the promise.",
+            "rules": [
+              "One file and no migration is small. Anything touching stored data is not.",
+              "If you are unsure, it is not small."
+            ]
+          }
+        },
+        {
+          "id": "write-test",
+          "type": "action",
+          "actorId": "oncall",
+          "title": "Write the failing test first",
+          "note": "It should fail for the reported reason",
+          "detail": {
+            "purpose": "The test is the proof the bug existed and the guard that it stays fixed. Written after the fix, it usually only proves the fix runs.",
+            "procedure": [
+              "Assert the behaviour the reporter expected, not the code path you plan to change.",
+              "Run it and watch it fail before touching the fix."
+            ]
+          }
+        },
+        {
+          "id": "fix",
+          "type": "action",
+          "actorId": "oncall",
+          "title": "Make the smallest change that passes",
+          "note": "No refactors, no drive-by tidying",
+          "detail": {
+            "purpose": "Every extra line in a hotfix is unreviewed risk shipped at speed. Tidying is a separate pull request on a normal day.",
+            "rules": [
+              "If the diff is over about thirty lines, go back and reconsider the scope question.",
+              "Leave the TODO. Someone will thank you for the small diff."
+            ]
+          }
+        },
+        {
+          "id": "ci",
+          "type": "question",
+          "actorId": "oncall",
+          "title": "Does the whole suite pass?",
+          "note": "Not just the new test",
+          "primaryLabel": "Yes",
+          "branches": [
+            {
+              "label": "No",
+              "tone": "error",
+              "note": "Something else broke",
+              "steps": [],
+              "exit": { "type": "goback", "to": "fix" }
+            }
+          ],
+          "detail": {
+            "purpose": "A green new test and a red suite means the fix traded one bug for another. The suite is the only signal that matters before deploy.",
+            "commands": [
+              { "cmd": "npm test", "note": "Full run, not the filtered one you used while working" }
+            ]
+          }
+        },
+        {
+          "id": "deploy",
+          "type": "output",
+          "actorId": "oncall",
+          "title": "Deploy and watch it",
+          "note": "Stay until the error rate settles",
+          "destination": "Production",
+          "tag": "15 min",
+          "detail": {
+            "purpose": "Deploying is not the end of the job. The five minutes after are when you find out whether you were right.",
+            "procedure": [
+              "Watch the error rate for the affected endpoint, not the global one.",
+              "Have the rollback command in your terminal before you deploy, not after."
+            ],
+            "metrics": [
+              { "label": "Watch for", "value": "5 minutes" }
+            ]
+          }
+        },
+        {
+          "id": "tell",
+          "type": "action",
+          "actorId": "oncall",
+          "title": "Tell the person who reported it",
+          "note": "In the place they reported it",
+          "detail": {
+            "purpose": "The bug is not closed until the person who found it knows. This is the step that gets skipped, and it is the one they remember.",
+            "procedure": [
+              "Reply where they reported it, not in a ticket they cannot see.",
+              "Say what was wrong in one sentence and what you changed in one more."
+            ]
+          }
+        }
+      ],
+      "end": { "label": "Fix is live", "tone": "success", "note": "And the reporter knows" }
+    }
+  ]
+}

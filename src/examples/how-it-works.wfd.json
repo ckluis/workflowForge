@@ -1,0 +1,240 @@
+{
+  "wfd": 1,
+  "title": "How this page works",
+  "subtitle": "The three steps, drawn by the renderer they describe",
+  "description": "The landing page explains itself in its own notation. This document is rendered by the same engine, from the same format, as every other page in this file — so the hero is not a picture of the product, it is the product running.",
+  "meta": {
+    "author": "workflowForge",
+    "tags": [
+      "explainer"
+    ]
+  },
+  "actors": [
+    {
+      "id": "you",
+      "name": "You",
+      "short": "YOU"
+    },
+    {
+      "id": "model",
+      "name": "Your model",
+      "short": "LLM"
+    },
+    {
+      "id": "page",
+      "name": "This page",
+      "short": "WF"
+    }
+  ],
+  "workflows": [
+    {
+      "id": "how",
+      "title": "Turn a process into a page you can send",
+      "description": "Three steps. You run the middle one — this page never sees your process until you paste the finished workflow back in, and it does not read it then either.",
+      "lens": "ops",
+      "summary": {
+        "trigger": "A process exists in someone's head",
+        "outcome": "One self-contained HTML file you can send to anyone",
+        "owner": "Whoever owns the process",
+        "duration": "About twenty minutes"
+      },
+      "start": {
+        "label": "A process exists, undrawn",
+        "note": "In someone's head, or in a flowchart nobody reads"
+      },
+      "steps": [
+        {
+          "id": "copy",
+          "type": "action",
+          "actorId": "you",
+          "title": "Copy the prompt",
+          "note": "It is inside this file",
+          "tag": "1 min",
+          "detail": {
+            "purpose": "The prompt and the renderer both travel inside this page. Copying the prompt fetches nothing and tells no one you did it.",
+            "procedure": [
+              "Open the builder and press Copy on the prompt.",
+              "Nothing leaves your machine at this step."
+            ]
+          }
+        },
+        {
+          "id": "generate",
+          "type": "input",
+          "actorId": "model",
+          "title": "Paste it into your own model, with your process",
+          "note": "You run this step, not this page",
+          "tag": "10 min",
+          "source": "Claude, ChatGPT, whichever you use",
+          "detail": {
+            "purpose": "This is the only step where your process text leaves your machine, and it goes to the model vendor you already chose — on their terms, not ours. This page is not involved and never sees it.",
+            "procedure": [
+              "Start a fresh conversation; the prompt is long and does badly with prior context.",
+              "Paste the prompt, then describe your process underneath it.",
+              "The reply should be one fenced JSON block and nothing else."
+            ],
+            "failureModes": [
+              {
+                "when": "The reply is wrapped in explanation",
+                "then": "Keep only what is between the fences",
+                "step": "generate"
+              }
+            ]
+          }
+        },
+        {
+          "id": "where",
+          "type": "choice",
+          "actorId": "you",
+          "title": "Render it here, or run the renderer yourself?",
+          "note": "Both produce the same file",
+          "primaryLabel": "Here",
+          "branches": [
+            {
+              "label": "On my own machine",
+              "tone": "info",
+              "note": "The renderer is open source",
+              "steps": [
+                {
+                  "id": "get-renderer",
+                  "type": "output",
+                  "actorId": "you",
+                  "title": "Download the renderer",
+                  "note": "One repository, no dependencies",
+                  "destination": "Your machine",
+                  "detail": {
+                    "purpose": "Nothing here is a service, so there is nothing to be locked into. The renderer that draws this page is the same code you can run locally, and the format is a plain JSON file. If you would rather your workflow never touched someone else's page at all, this is the supported path, not a workaround.",
+                    "procedure": [
+                      "Clone the repository and run ./build.sh — Node, no package install.",
+                      "Or open the downloaded index.html and use the builder inside it offline.",
+                      "The document format is the same either way, so a file built here opens there."
+                    ],
+                    "links": [
+                      {
+                        "label": "workflowForge on GitHub",
+                        "href": "https://github.com/ckluis/workflowForge"
+                      },
+                      {
+                        "label": "Download the renderer (zip)",
+                        "href": "https://github.com/ckluis/workflowForge/archive/refs/heads/main.zip"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "run-local",
+                  "type": "action",
+                  "actorId": "you",
+                  "title": "Run it against your document",
+                  "note": "Same renderer, same bytes out",
+                  "detail": {
+                    "purpose": "The build is deterministic: the same document produces the same page every time, here or on your machine. That is what makes the two paths genuinely interchangeable rather than a hosted version and a lesser one.",
+                    "commands": [
+                      {
+                        "cmd": "./build.sh",
+                        "note": "Tests, builds, and proves the file stands alone"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "end",
+                "label": "Same file, built on your own machine",
+                "tone": "success"
+              }
+            }
+          ],
+          "detail": {
+            "purpose": "This page will render your workflow without ever reading it — but you do not have to take that on trust. The renderer is open source, so the whole thing runs on your machine with nothing pasted anywhere.",
+            "rules": [
+              "Both paths use the same renderer and produce the same file.",
+              "Neither path sends your document anywhere."
+            ],
+            "links": [
+              {
+                "label": "workflowForge on GitHub",
+                "href": "https://github.com/ckluis/workflowForge"
+              }
+            ]
+          }
+        },
+        {
+          "id": "paste",
+          "type": "action",
+          "actorId": "you",
+          "title": "Paste the workflow back here",
+          "note": "The renderer draws it without reading it",
+          "primaryLabel": "Valid",
+          "detail": {
+            "purpose": "The renderer is mechanical: it validates the shape of the document and lays out what it finds. It makes no judgement about your process and sends nothing anywhere.",
+            "rules": [
+              "The first character must be { and the last must be }.",
+              "Same document in, same page out, every time."
+            ]
+          }
+        },
+        {
+          "id": "check",
+          "type": "question",
+          "actorId": "page",
+          "title": "Does it validate?",
+          "note": "Shape only — never content",
+          "primaryLabel": "Yes",
+          "branches": [
+            {
+              "label": "No",
+              "tone": "warn",
+              "note": "The validator names the path and the rule",
+              "steps": [
+                {
+                  "id": "return",
+                  "type": "output",
+                  "actorId": "you",
+                  "title": "Send the validator output back to the model",
+                  "note": "Verbatim, paths included",
+                  "destination": "Your model",
+                  "detail": {
+                    "purpose": "The validator's message is written to be pasted straight back. It names the path that failed and the rule it broke, which is usually all the model needs to return a corrected document.",
+                    "procedure": [
+                      "Copy the whole error, including the JSON path.",
+                      "Take the corrected document whole; do not merge it by hand."
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "goback",
+                "to": "paste"
+              }
+            }
+          ],
+          "detail": {
+            "purpose": "The only gate. It checks that the document is the right shape, not that your process is any good — that judgement stays with you and the people who run it."
+          }
+        },
+        {
+          "id": "download",
+          "type": "output",
+          "actorId": "page",
+          "title": "Download one HTML file",
+          "note": "No server, no build, no dependencies",
+          "destination": "Anyone you send it to",
+          "tag": "instant",
+          "detail": {
+            "purpose": "What comes out is a single file that carries its own renderer, styles and content. It opens from a mail attachment on a laptop with no network.",
+            "procedure": [
+              "Send it, commit it next to the code it describes, or host it anywhere.",
+              "Or download the renderer instead and run the whole thing yourself."
+            ]
+          }
+        }
+      ],
+      "end": {
+        "label": "A page you can send",
+        "tone": "success",
+        "note": "One file, every box worth opening"
+      }
+    }
+  ]
+}

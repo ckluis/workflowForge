@@ -1,0 +1,2698 @@
+{
+  "wfd": 1,
+  "title": "Workflows that draw themselves",
+  "subtitle": "A notation with five rules, a renderer that owns every pixel, and one HTML file that carries all of it",
+  "description": "This page is a demonstration of its own notation. The three diagrams below describe how you make a page like this one, what the renderer does to your document to produce it, and how to answer the single hardest question in the format — where a branch should end. Every box opens. The diagram is an index; the modals are the material.\n\nThe drawing style is derived from **DRAKON**, the flowchart language written for the Buran space programme. DRAKON's insight is that a flowchart becomes readable the moment you stop letting the layout vary: the successful route runs straight down the left edge, everything that can go wrong hangs off it to the right, and no line ever travels upward. We kept those laws, dropped the parts that only make sense on paper, and handed the geometry to a program.\n\nThe whole tool is the file you are reading. It contains its own diagrams, its own JSON source, the renderer that turned one into the other, and the prompt that produces the JSON in the first place. Save it, mail it, open it on a plane. What you build with it can do the same.",
+  "intro": "### The problem with flowcharts\n\nA flowchart is a directed graph drawn by hand, and a directed graph has no preferred shape. Give the same six-step process to six people and you get six pictures. One fans left. One spirals. One runs a line back up the page and across three others to get where it is going. Every one is *correct* — the underlying graph is identical — and every one charges the reader an orientation fee before a single fact is delivered. You have to read the drawing before you can read the process.\n\nThat fee compounds. Past about four decisions, readers stop tracing lines and start pattern-matching on where boxes sit, which is exactly what an arbitrary layout makes unreliable. DRAKON teaches this with a before-and-after pair: the same logic, the same boxes, the same conditions, redrawn as a set of straight vertical runs. Nothing is simplified, and it reads at a glance. Only the geometry changed.\n\nSo the position we took is that geometry is not a matter of taste. If the shape of a drawing is free to vary, the drawing is an illustration, not a notation.\n\n### The five rules\n\nEach buys something specific and costs something.\n\n**The happy path is a straight vertical line down the left edge.** Read the leftmost column top to bottom and you have read the workflow; nothing else is ever placed there. That buys a correct default reading for anyone with thirty seconds. It costs you the freedom to be vague about which route is the successful one — a left column ending in a rejection means the polarity is inverted.\n\n**Deviations fan right, and severity increases rightward.** Horizontal distance from the spine *is* badness. That buys a second, orthogonal reading: scan the right margin and you have a worst-first inventory of everything that can go wrong. It costs you the freedom to order branches by narrative convenience.\n\n**Lines never travel up, and never left except to merge.** The one sanctioned leftward run is the short horizontal returning a finished branch to a column already established to its left. That buys a guarantee that no two lines cross for structural reasons, so any crossing you see is deliberate. It costs the ability to draw a cycle — which is why the next rule exists.\n\n**A path returning to an earlier step ends in a `↩ Go back to N` chip**, and a path leaving for another diagram ends in a `↗ Go to diagram M` chip. Both are dead ends on the canvas. That buys rule three: a loop becomes a reference rather than a line. It costs the ability to trace a retry with a fingertip, which is the price of never having an upward line to disambiguate. The chips are clickable — the eye stays put and the finger travels.\n\n**There are no arrowheads.** Down is forward, right is worse, left is a merge. That buys visual quiet, and costs nothing, because there is no ambiguity left for an arrowhead to resolve.\n\n### What we took from DRAKON, and what we left\n\nThe skewer, further-right-is-worse, the ban on upward and leftward travel, plain-line merges, the absence of arrowheads, and the icon vocabulary — action, question, choice, insertion, input, output, shelf, timing, concurrency — are all DRAKON's, and the credit is theirs.\n\nWe left two things. The first is the **silhouette**: DRAKON's rule that a diagram taller than one screen must break into side-by-side chapters falling through left to right. Vertical scrolling is free now and horizontal scrolling is not, so we spend rows and hoard columns. The loss is real — a silhouette cannot contain unreachable code, because the only way to jump is to fall through to the next chapter — so reachability stops being proven by the shape and has to be checked instead. The renderer checks it.\n\nThe second is the **drawn back-edge**. DRAKON expresses repetition with paired loop icons on one uninterrupted skewer and never draws a line going up. We wanted retries that return to an arbitrary earlier point, which that structure cannot express, so back-edges and cross-diagram jumps became terminal chips. That reintroduces exactly what DRAKON avoided — a symbolic reference you have to look up — and in exchange we can draw state-machine-shaped retry logic that does not nest.\n\n### Why a machine draws it\n\n**The model chooses the content graph; the renderer owns every pixel.** Your document says which steps exist, which of them is the spine, what hangs off which question, and where each branch terminates. It says nothing about coordinates, because it is not allowed to.\n\nEverything geometric comes from the document alone: rows by longest-path layering, columns by lane index, box sizes from a fixed character-advance table rather than from the browser, merge bands allocated in the gutters by target lane. No randomness, no force-directed settling, no measuring the DOM. Same input, same output, byte for byte.\n\nContrast asking a model for SVG directly. Models are good at SVG the way they are good at ASCII art: convincing at a glance, structurally arbitrary. Regenerate and the boxes move. Diff two versions and you get a wall of changed coordinates that tells you nothing about whether the process changed. Here, a one-word edit changes one line of JSON.\n\n### Every box has a room behind it\n\nA diagram that fits on a page can only be a summary, and summaries are how organisations lose the parts that matter — the threshold, the exception, the reason someone stopped doing it the fast way.\n\nSo every box is a door. Click one and you get the purpose, the procedure in order, the rules with their actual numbers in them, the inputs and outputs, and the failure modes, each linked to the step it sends you to. Depending on the lens you may also get an agent transcript, a wireframe with every control wired to the step it leads to, a runbook, or a schema with sample rows.\n\nThe diagram's job is to make that material findable, and to make it obvious what you have not read. A workflow whose boxes are empty is a workflow nobody wrote down.\n\n### This file is the tool\n\nNo install, no server, no account, no build step at the reading end. This page carries its own diagrams, the complete JSON behind them, the renderer, and the prompt that turns a description of a process into that JSON.\n\nWhich means the artefact reproduces. Take the prompt, paste your own process into it, drop the JSON into the builder, and download the result. What comes out is another self-contained file with the same five promises and the same ability to make the next one.",
+  "meta": {
+    "author": "workflowForge",
+    "date": "2026-08-22",
+    "source": "The DRAKON language (drakonflow.com) for the visual laws; the WFD v1 spec and src/render.mjs for everything geometric",
+    "version": "1.0",
+    "tags": [
+      "notation",
+      "drakon",
+      "diagrams",
+      "documentation",
+      "deterministic-rendering",
+      "self-hosting"
+    ]
+  },
+  "theme": {
+    "accent": "#2f6f4e",
+    "density": "comfortable",
+    "directionMarks": false
+  },
+  "cta": {
+    "title": "Now draw one of your own",
+    "body": "Take the prompt below, paste your process into the input block at the bottom of it, and hand the whole thing to a capable model. You will get back one JSON document and nothing else. Drop that document into the builder on this page and press render.\n\nGood first candidates are the processes that already exist in your head and nowhere else: the onboarding you walk every new hire through, the release you do on Thursdays, the escalation path that only two people know. If you can write down the successful route as a bare numbered list, the notation will take it from there."
+  },
+  "glossary": [
+    {
+      "term": "WFD",
+      "definition": "**W**ork**f**low **D**iagram, version 1 — the JSON document format this page is written in. One document holds a title, an intro, a glossary, and one to twenty workflows. It describes *what* the diagram contains and never *where* anything goes; every coordinate is derived by the renderer."
+    },
+    {
+      "term": "Skewer",
+      "definition": "DRAKON's term for a maximal vertical run of directly connected boxes sharing one x-coordinate — boxes threaded on a line like food on a kebab skewer. Every branch point spins off a new skewer further right; every skewer either terminates or merges back onto one to its left."
+    },
+    {
+      "term": "Happy path",
+      "definition": "The route where everything works, written before any exception is considered. It occupies lane 0 and renders as one unbroken vertical line from `start` to `end`. If your happy path finishes in a rejection, a denial, or a timeout, the polarity is wrong — invert the question and rewrite the list."
+    },
+    {
+      "term": "Lane",
+      "definition": "One column. Lane 0 is the happy path; every branch of every question opens a new lane immediately to the right of its parent, and later siblings sit right of earlier ones. Lane index is assigned by a counter that increments the moment the flattening walk descends into a branch, which is what makes *further right = more exceptional* true by construction rather than by convention."
+    },
+    {
+      "term": "Fan",
+      "definition": "The single horizontal segment that carries all of one question's branches. It leaves the question's right vertex at its vertical centre, runs right to the furthest branch lane, and drops into each lane along the way, with the answer text set just above the line at each drop. It cannot strike a box, because the renderer reserves the question's row across every lane to its right."
+    },
+    {
+      "term": "Merge",
+      "definition": "The short leftward horizontal that returns a finished branch to a lane already established to its left — the one and only sanctioned leftward run in the notation. Merges into the same target share one horizontal *band* in the gutter directly above it; within a gutter, bands are stacked by target lane, leftmost on top."
+    },
+    {
+      "term": "Goback chip",
+      "definition": "A terminal `↩ Go back to 3 · Validate the cart` chip ending a branch that returns to an earlier step. It is a dead end on the canvas and a clickable scroll-and-flash link in the page. Every retry, resubmit, and poll in this notation is drawn this way, because a line travelling upward is not permitted."
+    },
+    {
+      "term": "Goto chip",
+      "definition": "A terminal `↗ Go to diagram 2 · Refund flow` chip ending a branch that leaves for another workflow in the same document and does not come back. Use it when a variation is genuinely a different process. When control *does* return, the step is an `insert` instead, and the box itself is the link."
+    },
+    {
+      "term": "Lens",
+      "definition": "Per-workflow selector — `ai`, `ui`, `ops`, `data`, or `generic` — that decides which extra fields a modal renders. `ai` adds a transcript with tools and files touched; `ui` draws a wireframe with every control wired to the step it leads to; `ops` and `data` add runbooks, commands, alerts, schemas, and sample rows. The shared fields are available under every lens."
+    },
+    {
+      "term": "Phase",
+      "definition": "An optional labelled band down the left margin covering a contiguous run of lane-0 steps — *Gather*, *Generate*, *Render*, *Publish*. Phases add no nodes and change no geometry beyond a rail; they exist so a reader can find their place in a tall diagram without counting boxes."
+    },
+    {
+      "term": "Longest-path layering",
+      "definition": "The rule that fixes every row: `row(start) = 0`, and for every other node `row(n) = 1 + max(row(p))` over all its predecessors. Chip edges are excluded because chips are leaves. A node therefore sits one row below the *latest* thing that can reach it, which is what makes merges always point downward and the whole layout a pure function of the document."
+    }
+  ],
+  "actors": [
+    { "id": "author", "name": "You, the author", "short": "YOU" },
+    { "id": "model", "name": "The model", "short": "MDL" },
+    { "id": "validator", "name": "The validator", "short": "VAL" },
+    { "id": "renderer", "name": "The renderer", "short": "REN" }
+  ],
+  "workflows": [
+    {
+      "id": "make-a-diagram",
+      "title": "Make a diagram of your own process",
+      "description": "The loop you are standing in right now: hand a process to a model, get one JSON document back, render it, look at the shape, and download a file you can send to someone. The interesting part is not the happy path — it is the four things that reliably go wrong on the way, which hang off it to the right in order of how much work they cost you.",
+      "lens": "generic",
+      "summary": {
+        "trigger": "You need to write down a process that currently exists only in someone's head, or you have a flowchart nobody can read",
+        "outcome": "A single self-contained HTML file, in the hands of the people who run the process, with every box worth opening",
+        "owner": "Whoever owns the process — not a documentation team",
+        "duration": "20–45 minutes for a first pass, most of it spent reading modals",
+        "frequency": "Once per process, then whenever the process changes"
+      },
+      "phases": [
+        {
+          "label": "Gather",
+          "from": "pick-your-input",
+          "to": "describe-the-process"
+        },
+        {
+          "label": "Generate",
+          "from": "wait-for-the-model",
+          "to": "validate-the-document"
+        },
+        {
+          "label": "Render",
+          "from": "render-the-page",
+          "to": "check-the-modals"
+        },
+        {
+          "label": "Publish",
+          "from": "download-the-page",
+          "to": "share-the-file"
+        }
+      ],
+      "start": {
+        "label": "A process exists but is not written down anywhere useful",
+        "note": "Or it is written down as a flowchart nobody can follow"
+      },
+      "steps": [
+        {
+          "id": "pick-your-input",
+          "type": "choice",
+          "actorId": "author",
+          "title": "Choose what you will hand the model",
+          "note": "The model needs source material, not a topic",
+          "tag": "5 min",
+          "primaryLabel": "A written SOP",
+          "detail": {
+            "purpose": "Decide what raw material the model will read, because the quality of the diagram is set here and almost nowhere else. A model given a topic invents a plausible process; a model given source material transcribes a real one.",
+            "actor": "You, the person who knows the process",
+            "duration": "5 minutes if the material exists, an afternoon if it does not",
+            "procedure": [
+              "Prefer the most **specific** artefact you have. A half-finished runbook with real thresholds in it beats a polished wiki page written in the passive voice.",
+              "If several artefacts exist, concatenate them rather than choosing. Contradictions between them are useful signal — the model will surface the conflict as a branch, which is usually the most valuable box on the finished page.",
+              "Include the numbers. Timeouts, retry counts, dollar limits, queue names, SLA windows. These are what make a modal worth opening, and a model will not invent yours.",
+              "Include at least one story of the process going wrong. The exceptions are the whole right-hand side of the diagram, and they are the part nobody ever writes down."
+            ],
+            "rules": [
+              "Do not paste a process you do not own. You will be the one defending the thresholds in the modals.",
+              "Anything longer than roughly 8,000 words should be split into two documents and two runs. One WFD document holds up to twenty workflows, but one *prompt* run should cover one coherent area.",
+              "Screenshots of a whiteboard are legitimate input. Photographs of a whiteboard at an angle, in a dim room, are not — the model will read the boxes it can see and silently drop the rest."
+            ],
+            "failureModes": [
+              {
+                "when": "You only have a topic, no artefact",
+                "then": "Talk through the process out loud and record it — a transcript is better source material than a wiki page",
+                "step": "transcribe-the-walkthrough"
+              },
+              {
+                "when": "The only artefact is a diagram image",
+                "then": "Capture it cleanly and expect to correct the model's reading of it",
+                "step": "photograph-the-flowchart"
+              }
+            ],
+            "body": "The three answers here are not equally good, which is why they are ordered the way they are. A written procedure is the primary answer because the model can quote it. A recorded walkthrough is second because it contains everything the writer would have edited out. An existing flowchart is last, and to the right, because you are asking the model to do inference on pixels — it will get the boxes and lose half the edges."
+          },
+          "branches": [
+            {
+              "label": "A recorded walkthrough",
+              "tone": "info",
+              "note": "Nothing is written down; someone talks it through",
+              "steps": [
+                {
+                  "id": "transcribe-the-walkthrough",
+                  "type": "action",
+                  "actorId": "author",
+                  "title": "Transcribe the walkthrough and keep the asides",
+                  "note": "The digressions are the exception branches",
+                  "detail": {
+                    "purpose": "Turn spoken knowledge into text the model can read, without the editing pass that normally strips out everything interesting.",
+                    "actor": "You, plus any transcription tool",
+                    "duration": "10 minutes of recording, 5 minutes of cleanup",
+                    "procedure": [
+                      "Record someone walking through the process while actually doing it, or narrating a recent run of it. Ask them to say the numbers out loud.",
+                      "Run it through any transcription tool. Do not clean it up beyond fixing proper nouns — the model handles disfluency fine.",
+                      "**Keep every aside.** \"Oh, and if it's a Friday we skip that bit\" is a branch. \"That's only for the enterprise accounts\" is a question. These are exactly the sentences a written SOP would have deleted.",
+                      "Add a two-line header before the transcript naming the trigger and the outcome, because a transcript rarely states either."
+                    ],
+                    "rules": [
+                      "Transcribe one person at a time. Two people talking over each other produce a transcript where the model cannot tell which of two conflicting procedures is current.",
+                      "Do not paraphrase into bullet points before handing it over. Bullet points are where nuance goes to die, and the model is better at compressing than you are at deciding what to keep."
+                    ],
+                    "failureModes": [
+                      {
+                        "when": "The speaker keeps saying \"it depends\"",
+                        "then": "Push once for the deciding factor — that factor is a question step, and 'it depends' is a step with no detail",
+                        "step": "describe-the-process"
+                      },
+                      {
+                        "when": "The transcript is 20,000 words of meeting",
+                        "then": "Cut to the section where the process is actually described; the rest will dilute the run"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "continue"
+              }
+            },
+            {
+              "label": "An existing flowchart",
+              "tone": "warn",
+              "note": "Expect to correct the model's reading of it",
+              "steps": [
+                {
+                  "id": "photograph-the-flowchart",
+                  "type": "action",
+                  "actorId": "author",
+                  "title": "Capture the flowchart and label what the image loses",
+                  "note": "Attach the image and describe the edges in words",
+                  "detail": {
+                    "purpose": "Give the model a clean image plus the edge information that an image of a messy flowchart never actually conveys, so it does not have to guess which line goes where.",
+                    "actor": "You",
+                    "duration": "10 minutes",
+                    "procedure": [
+                      "Export the original rather than screenshotting it, if the original still exists in a tool. Vector beats raster; raster beats a photograph.",
+                      "If it is a photograph, shoot it square-on in even light. Crop to the diagram. One image per diagram, not one image of a wall.",
+                      "Write out, in prose, every edge you can see that the image renders ambiguously — crossings, lines that pass behind boxes, arrowheads pointing into the side of a box, and any line that travels upward.",
+                      "Say explicitly which route is the successful one. Old flowcharts almost never mark this, and it is the single most important fact the model needs."
+                    ],
+                    "rules": [
+                      "Every upward line in the source diagram is going to become a `goback` chip. Name its target in your prose, because the model will otherwise pick the nearest plausible box.",
+                      "Junction dots with several arrowheads converging are merges. Say what they merge *into* — the target, not the dot.",
+                      "Expect to lose the swimlane columns, not the actors. This notation has no lanes for ownership — down is sequence and right is severity, and a third axis would break the no-crossing guarantee. Name the lanes once in the document-level `actors` registry, point each step at one with `actorId`, and the sheet draws the initials on every box and ticks the line wherever the work crosses from one lane to the next."
+                    ],
+                    "failureModes": [
+                      {
+                        "when": "The flowchart has more than about forty boxes",
+                        "then": "It is several workflows; say so in the prompt and let the model split it",
+                        "step": "read-the-shape"
+                      },
+                      {
+                        "when": "The image is the only record and it is unreadable",
+                        "then": "Treat it as a prompt for a walkthrough, not as source material",
+                        "step": "transcribe-the-walkthrough"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "continue"
+              }
+            }
+          ]
+        },
+        {
+          "id": "copy-the-prompt",
+          "type": "action",
+          "actorId": "author",
+          "title": "Copy the master prompt into a fresh conversation",
+          "note": "Fresh context; the prompt is long and does not share well",
+          "tag": "1 min",
+          "detail": {
+            "purpose": "Load the cartographer instructions into a model with nothing else competing for its attention, so the output is one JSON document and nothing else.",
+            "actor": "You",
+            "duration": "under a minute",
+            "procedure": [
+              "Scroll to the footer of this page and copy everything between the BEGIN PROMPT and END PROMPT markers. The copy button takes the whole thing.",
+              "Open a **new** conversation. Do not append the prompt to a chat where you have been discussing the process — prior turns bias the model toward summarising the conversation instead of transcribing the source.",
+              "Paste the prompt first, alone, before any of your material. The prompt ends with an empty input block that your material goes into.",
+              "Use a capable model with a long context window. The prompt itself is substantial, and it has to fit alongside your source material and a document that may run to thousands of lines of JSON."
+            ],
+            "rules": [
+              "Do not edit the prompt to \"make it shorter\". The parts that look redundant are the parts that stop the model from writing a preamble, inventing display numbers, or emitting a graph instead of a spine.",
+              "Do not add your own instructions above the prompt. If you need to constrain the output — a house vocabulary, a fixed set of workflow ids — put it inside the input block at the bottom, where the prompt expects context.",
+              "If the model supports a system prompt, the master prompt can go there instead. Behaviour is the same; the context accounting is slightly better."
+            ],
+            "failureModes": [
+              {
+                "when": "The model replies asking a clarifying question",
+                "then": "It has been given an instruction that overrides rule 3 of the prompt — start a clean conversation with nothing else in it"
+              },
+              {
+                "when": "The prompt is truncated by a paste limit",
+                "then": "Attach it as a file instead and tell the model to follow it verbatim"
+              }
+            ],
+            "links": [
+              {
+                "label": "The prompt, in full, at the bottom of this page",
+                "href": "#prompt"
+              }
+            ]
+          }
+        },
+        {
+          "id": "describe-the-process",
+          "type": "input",
+          "actorId": "author",
+          "title": "Paste your material into the input block",
+          "note": "Everything you gathered, unedited, under YOUR INPUT",
+          "source": "Your SOP, transcript, exported flowchart, or all three",
+          "detail": {
+            "purpose": "Hand the model the source material in the one place the prompt is expecting it, and state the two facts a source document almost never states: what starts this, and what done looks like.",
+            "actor": "You",
+            "duration": "2 minutes",
+            "inputs": [
+              {
+                "label": "Source material",
+                "value": "SOP, transcript, diagram export — concatenated, not summarised"
+              },
+              {
+                "label": "Trigger",
+                "value": "One sentence: the event in the world that starts this"
+              },
+              {
+                "label": "Outcome",
+                "value": "One sentence: what a stranger could verify is done and good"
+              }
+            ],
+            "outputs": [
+              {
+                "label": "A filled input block",
+                "value": "Ready to send as a single turn"
+              }
+            ],
+            "procedure": [
+              "Paste your material below the `### YOUR INPUT` marker at the very end of the prompt. Nothing goes after it.",
+              "Above the material, write two lines: `Trigger: ...` and `Outcome: ...`. These become `summary.trigger` and `summary.outcome`, and they constrain the entire shape of the diagram — lane 0 becomes the shortest honest route from one to the other.",
+              "Name any hard constraints you want respected: house terminology, a team name, a system that must be called by its real name, a threshold that is policy rather than habit.",
+              "Send it as one turn. Do not send the material in pieces across several messages; the model will start work on the first fragment."
+            ],
+            "rules": [
+              "If you cannot write an outcome a stranger could verify, you have a responsibility area rather than a workflow. Find the workflow inside it before you send.",
+              "State assumptions rather than asking the model to make them. The prompt forbids it from asking you a question, so an ambiguity you leave in becomes a guess you will have to find later.",
+              "Do not tell the model how many steps you want. Step count falls out of the process; asking for ten produces ten, including three that do not exist."
+            ],
+            "failureModes": [
+              {
+                "when": "The material describes two processes with different triggers",
+                "then": "Say so — the model will split them into two workflows and cross-link with a goto, which is the correct outcome",
+                "step": "read-the-shape"
+              },
+              {
+                "when": "You realise mid-paste that a whole exception path is missing",
+                "then": "Add it as prose at the end of the block; ordering inside the input block does not matter",
+                "step": "check-the-modals"
+              }
+            ]
+          }
+        },
+        {
+          "id": "wait-for-the-model",
+          "type": "wait",
+          "actorId": "model",
+          "title": "Wait for one fenced JSON block",
+          "note": "No preamble, no summary — the reply starts with a fence",
+          "duration": "40–120 seconds",
+          "tag": "AI",
+          "detail": {
+            "purpose": "Give the model room to do the whole job in one turn. The document is long — a real one runs from several hundred to a few thousand lines — and most of that length is modal prose, which is the part worth waiting for.",
+            "actor": "The model",
+            "duration": "40–120 s for a 3-workflow document; longer if your source material is large",
+            "procedure": [
+              "Let it finish. Do not interrupt with a follow-up message; the prompt commits the model to a single self-contained reply and a mid-stream nudge usually costs you the second half of the document.",
+              "Watch the first three characters. A correct reply opens with the fence. Anything else — \"Here is\", \"I've analysed\" — means prose is coming, and you handle that below.",
+              "If the reply is cut off by an output limit, ask for the remainder starting from the last complete workflow object rather than regenerating; the first half is usually good.",
+              "Expect roughly one to four workflows. One usually means the model under-read the input; more than eight usually means it split on data variation rather than process variation."
+            ],
+            "rules": [
+              "A run that returns in fifteen seconds has almost certainly written thin modals. Length here is a proxy for substance, and substance is the whole point of the format.",
+              "Do not ask for a \"shorter version\" to save time. The diagram is the cheap part; the modals are the deliverable."
+            ],
+            "failureModes": [
+              {
+                "when": "The reply is truncated mid-string",
+                "then": "Ask for continuation from the last complete workflow, then splice",
+                "step": "paste-into-builder"
+              },
+              {
+                "when": "The model returns two fenced blocks",
+                "then": "Take the first; the second is usually an apologetic re-emission",
+                "step": "strip-the-prose"
+              },
+              {
+                "when": "The reply contains prose around the JSON",
+                "then": "Strip it before pasting",
+                "step": "strip-the-prose"
+              }
+            ]
+          }
+        },
+        {
+          "id": "paste-into-builder",
+          "type": "action",
+          "actorId": "author",
+          "title": "Paste the document into the builder panel",
+          "note": "The builder lives in the footer of this page",
+          "detail": {
+            "purpose": "Get the document in front of the validator as early as possible, because the validator's messages are far more specific than anything you will work out by reading JSON.",
+            "actor": "You, in the builder panel of this page",
+            "duration": "seconds",
+            "procedure": [
+              "Open the builder at the bottom of this page and paste the document into the source box. Paste the JSON only — from the opening `{` to the closing `}`.",
+              "Press validate. The check runs entirely in the page; nothing leaves your machine.",
+              "Read the result before rendering. `ok 3 workflow(s), 47 steps, 0 warning(s)` is what you are aiming for. Warnings are not fatal but every one of them names a step whose modal will open empty.",
+              "Keep the raw model reply in the conversation. Every recovery path below works by handing the model an error and asking it to repair its own document, which needs the original still in context."
+            ],
+            "rules": [
+              "Zero warnings is the bar, not zero errors. A document with thirty steps and eleven `has no detail` warnings is a picture, and pictures are what we are replacing.",
+              "Never hand-edit display numbers into titles. The renderer computes `1`, `2`, `4a.2`; a number you type will disagree with it forever.",
+              "Re-paste rather than patch, when the model has produced a corrected document. Merging a fix by hand into a document you did not write is how ids drift out of sync."
+            ],
+            "failureModes": [
+              {
+                "when": "The paste fails to parse at all",
+                "then": "There is prose or a stray fence in the buffer",
+                "step": "strip-the-prose"
+              },
+              {
+                "when": "It parses but the validator reports errors",
+                "then": "Send the error text back to the model verbatim",
+                "step": "copy-the-error-back"
+              }
+            ]
+          }
+        },
+        {
+          "id": "validate-the-document",
+          "type": "question",
+          "actorId": "validator",
+          "title": "Does the document validate cleanly?",
+          "note": "Zero errors and zero warnings",
+          "primaryLabel": "Yes",
+          "detail": {
+            "purpose": "Separate the three failures that look identical from the outside — a formatting problem, a rule violation, and a modelling problem — because they cost wildly different amounts to fix.",
+            "actor": "The validator, then you",
+            "duration": "instant",
+            "procedure": [
+              "Look first at whether it *parsed*. A parse failure is a formatting problem and is the cheapest of the three: the JSON is wrapped in something.",
+              "If it parsed, read the reported paths. The validator names the exact location — `workflows[1].steps[3].branches[0].exit.to` — and usually names the fix in a hint line underneath.",
+              "If it validated with zero errors and zero warnings, look at the *shape* before celebrating. A document can be perfectly legal and still be a graph someone drew sideways, which is the third failure and the expensive one.",
+              "The tell for the third failure: every branch exits with `goto`, lane 0 is three steps long, or the same step id appears as the target of five different jumps. That is a general graph wearing the format's clothes."
+            ],
+            "rules": [
+              "Errors block rendering. Warnings do not, and that is exactly why warnings are the ones people ship.",
+              "Fix the document, not the validator. Every rule it enforces exists to keep one of the five visual promises true.",
+              "Two rounds of repair is normal. Five means the source material was ambiguous, not that the model is bad at JSON — go back and describe the process more precisely."
+            ],
+            "failureModes": [
+              {
+                "when": "Prose wrapped around the JSON",
+                "then": "Strip everything outside the fence and re-paste",
+                "step": "strip-the-prose"
+              },
+              {
+                "when": "Structural errors with named paths",
+                "then": "Hand the errors back to the model verbatim",
+                "step": "copy-the-error-back"
+              },
+              {
+                "when": "Legal JSON, wrong shape",
+                "then": "The exits were chosen badly; work the exit decision explicitly",
+                "step": "reread-the-exit-rules"
+              }
+            ]
+          },
+          "branches": [
+            {
+              "label": "Wrapped in prose",
+              "tone": "info",
+              "note": "It parsed as nothing; there is text around the fence",
+              "steps": [
+                {
+                  "id": "strip-the-prose",
+                  "type": "action",
+                  "actorId": "author",
+                  "title": "Strip everything outside the fence",
+                  "note": "First character must be {, last must be }",
+                  "detail": {
+                    "purpose": "Recover a perfectly good document from a reply that violated the prompt's no-preamble rule. This is the cheapest failure on the page and it costs about fifteen seconds.",
+                    "actor": "You",
+                    "duration": "15 seconds",
+                    "procedure": [
+                      "Delete everything before the first `{` and everything after the matching final `}`. That includes the ```json fence, any \"Here is the document\" line, and any trailing summary of what the model did.",
+                      "Check for a second fenced block further down. Models sometimes emit the document, then a shortened \"summary version\" — take the first and delete the second.",
+                      "Watch for smart quotes. A reply that was reformatted by a chat client can contain typographic quotes that are not legal JSON; replace them with straight quotes.",
+                      "Re-paste and validate again. If it now parses, nothing else about the document is affected — this failure is purely at the transport layer."
+                    ],
+                    "rules": [
+                      "Do not ask the model to \"send it again without the preamble\". That costs another full generation and often produces a *different* document, losing modal text you had already reviewed.",
+                      "If the reply contains a trailing comment line inside the JSON — `// note: assumed a 24h SLA` — delete the line and note the assumption yourself. JSON has no comments and the prompt forbids them."
+                    ],
+                    "failureModes": [
+                      {
+                        "when": "Stripping the prose still does not parse",
+                        "then": "The reply was truncated; ask for the remainder rather than re-running",
+                        "step": "wait-for-the-model"
+                      },
+                      {
+                        "when": "The model wrapped each workflow in its own fence",
+                        "then": "Concatenate them into one workflows array by hand, then validate",
+                        "step": "paste-into-builder"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "goback",
+                "to": "paste-into-builder",
+                "label": "Re-paste the stripped JSON"
+              }
+            },
+            {
+              "label": "Validator errors",
+              "tone": "warn",
+              "note": "It parsed, but it broke one of the layout rules",
+              "steps": [
+                {
+                  "id": "copy-the-error-back",
+                  "type": "output",
+                  "actorId": "author",
+                  "title": "Send the validator output back to the model",
+                  "note": "Verbatim, including the paths and the hints",
+                  "destination": "The same conversation that produced the document",
+                  "detail": {
+                    "purpose": "Let the model repair its own document using the same specific machine feedback you got, instead of you translating error paths into English and losing the specificity on the way.",
+                    "actor": "You, pasting into the model conversation",
+                    "duration": "1 minute plus one generation",
+                    "outputs": [
+                      {
+                        "label": "Repair request",
+                        "value": "The full error block, unedited, plus one line of instruction"
+                      }
+                    ],
+                    "procedure": [
+                      "Copy the entire error block — every line, including the `hint:` lines. The hints frequently contain the literal replacement JSON, for example `change this exit to { \"type\": \"goback\", \"to\": \"validate-cart\" }`.",
+                      "Paste it into the same conversation with one instruction: *return the corrected full document, same rules as before, JSON only*.",
+                      "Ask for the **whole** document back, not a patch. Patches applied by hand to a document you did not write are where step ids quietly drift apart.",
+                      "If several errors point at the same workflow, mention that too — a single mis-modelled question often generates four downstream errors, and naming the cluster helps."
+                    ],
+                    "rules": [
+                      "Do not paraphrase the errors. `workflows[1].steps[3].branches[0].exit.to` is precise; \"the second diagram has a bad link\" is not.",
+                      "Do not fix errors yourself on the first round. You will fix the symptom the validator named, and the model will have understood the underlying shape problem better than the error text suggests.",
+                      "Keep the errors and the original document in one conversation. A fresh chat has no memory of why the document is shaped the way it is."
+                    ],
+                    "failureModes": [
+                      {
+                        "when": "The same error survives two repair rounds",
+                        "then": "The model has mis-modelled the flow, not mis-typed it — state the intent in words instead",
+                        "step": "quote-the-rule-in-the-chat"
+                      },
+                      {
+                        "when": "The repair introduces new errors elsewhere",
+                        "then": "Normal on round one; re-validate and send the new block",
+                        "step": "paste-into-builder"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "classify-the-error",
+                  "type": "question",
+                  "actorId": "author",
+                  "title": "Is this a rule violation rather than a typo?",
+                  "note": "Shape errors need the rule quoted; syntax slips do not",
+                  "primaryLabel": "Yes, a rule",
+                  "detail": {
+                    "purpose": "Decide whether the model needs to be told a rule or merely told it dropped a comma, because quoting a rule at a syntax error wastes a round and quoting nothing at a shape error wastes three.",
+                    "actor": "You",
+                    "duration": "under a minute",
+                    "procedure": [
+                      "Read the error's *message*, not its path. Messages like `a join/continue exit points at a step that is not below it`, `the flow graph contains a cycle`, or `a join exit points to the right` are rule violations — the model's mental model of the layout is wrong.",
+                      "Messages about missing ids, unknown types, absent branches, or a failure to parse are mechanical. The model knows the rule and slipped.",
+                      "A rule violation almost always clusters. If you have one direction error you usually have three, and they are all the same misunderstanding of one question.",
+                      "When in doubt, treat it as a rule violation. Quoting the rule costs you two sentences; not quoting it costs a generation."
+                    ],
+                    "rules": [
+                      "Every rule violation in this format reduces to one of two sentences: *merges go down and left*, or *back-references go up*. If you can decide which one was broken, you can fix it in one round.",
+                      "The validator's hint line is the fastest classifier available — it exists precisely on the errors that are rule violations."
+                    ],
+                    "failureModes": [
+                      {
+                        "when": "The error is a cycle",
+                        "then": "Always a rule violation; the model drew a loop as a line",
+                        "step": "quote-the-rule-in-the-chat"
+                      },
+                      {
+                        "when": "The error is a duplicate step id",
+                        "then": "Mechanical; the model will fix it unprompted",
+                        "step": "let-the-model-repair"
+                      }
+                    ]
+                  },
+                  "branches": [
+                    {
+                      "label": "No, a typo",
+                      "tone": "neutral",
+                      "note": "Missing id, unknown type, stray comma — no rule to quote",
+                      "steps": [],
+                      "exit": {
+                        "type": "join",
+                        "to": "let-the-model-repair"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "quote-the-rule-in-the-chat",
+                  "type": "action",
+                  "actorId": "author",
+                  "title": "Quote the rule that was broken, in one sentence",
+                  "note": "Merges go down and left; back-references go up",
+                  "detail": {
+                    "purpose": "Repair the model's understanding rather than the symptom, so the corrected document does not simply move the same violation somewhere else.",
+                    "actor": "You",
+                    "duration": "2 minutes",
+                    "procedure": [
+                      "Name the rule in one sentence, in your own words. \"A `join` may only point at a step that is in an ancestor lane *and* laid out below it; anything pointing upward has to be a `goback` chip instead.\"",
+                      "Then name the step. \"The branch at `check-address` is trying to join back to `enter-address`, which is above it. That is a retry, so it is a `goback`.\"",
+                      "If the error was a cycle, say so explicitly: cycles cannot exist on the canvas at all, and every one of them is a `goback` chip that was drawn as a line.",
+                      "Ask for the whole corrected document once more, JSON only."
+                    ],
+                    "rules": [
+                      "One sentence of rule plus one sentence of instance. Longer explanations start a discussion, and the prompt has already told the model not to have one.",
+                      "Never write the corrected JSON yourself unless it is a single token. If you are willing to hand-edit exits, you are willing to hand-edit ids, and that is how a document stops matching the process it describes."
+                    ],
+                    "failureModes": [
+                      {
+                        "when": "The model argues that the flow really does loop",
+                        "then": "It does; the loop is expressed as a chip, not as an edge — say that",
+                        "step": "let-the-model-repair"
+                      },
+                      {
+                        "when": "You cannot tell which rule was broken",
+                        "then": "Work the exit decision explicitly against diagram 3",
+                        "step": "reread-the-exit-rules"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "let-the-model-repair",
+                  "type": "action",
+                  "actorId": "model",
+                  "title": "Take the corrected document, whole",
+                  "note": "Replace, never merge",
+                  "detail": {
+                    "purpose": "Get a complete replacement document rather than a patch, so the version in the builder is always exactly the version the model reasoned about.",
+                    "actor": "The model, then you",
+                    "duration": "one generation, 40–120 s",
+                    "procedure": [
+                      "Wait for a full document. If the model returns only the changed workflow, ask for the complete file — the builder validates documents, not fragments.",
+                      "Skim the diff mentally for collateral damage: step ids that were renamed, modal text that got shorter, a workflow that quietly lost its `summary`. Repair rounds sometimes trade prose for correctness.",
+                      "Re-paste over the old source rather than editing in place.",
+                      "If this is the third repair round on the same workflow, stop repairing and go back to the description — the ambiguity is upstream of the model."
+                    ],
+                    "rules": [
+                      "A repair that shortens the modals is not a repair. Say so and ask for the detail restored; models under repair pressure compress prose first.",
+                      "Two rounds is normal. Three is a smell. Four means you are debugging the wrong artefact."
+                    ],
+                    "failureModes": [
+                      {
+                        "when": "The corrected document validates but has fewer steps",
+                        "then": "The model deleted rather than fixed; ask for the steps back by id",
+                        "step": "check-the-modals"
+                      },
+                      {
+                        "when": "It still fails on the same path",
+                        "then": "Restate the rule and the instance in one sentence each",
+                        "step": "quote-the-rule-in-the-chat"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "goback",
+                "to": "paste-into-builder",
+                "label": "Re-paste the repaired document"
+              }
+            },
+            {
+              "label": "A graph, not a spine",
+              "tone": "error",
+              "note": "Legal JSON, but every branch is a jump and lane 0 is three steps",
+              "steps": [
+                {
+                  "id": "reread-the-exit-rules",
+                  "type": "action",
+                  "actorId": "author",
+                  "title": "Rebuild the spine before touching anything else",
+                  "note": "Write the happy path as a bare numbered list, first",
+                  "detail": {
+                    "purpose": "Fix the one failure the validator cannot catch: a document that obeys every rule and still models a general directed graph, because the model never committed to a happy path.",
+                    "actor": "You, with the model",
+                    "duration": "10–20 minutes; this is the expensive one",
+                    "procedure": [
+                      "Diagnose it properly first. The symptoms are a lane 0 of three or four steps, most branches exiting with `goto`, several branches pointing at the same step, and a `start` label that restates the workflow title instead of an event.",
+                      "Write the happy path yourself as a bare numbered list of five to twelve imperative steps, in which every step assumes the previous one succeeded and no line contains the word *if*.",
+                      "Send that list back with one instruction: *this is lane 0; rebuild the document around it and hang every exception off it as a branch*.",
+                      "Then walk each exception against the exit decision in diagram 3, which is the actual skill this failure is a symptom of missing."
+                    ],
+                    "rules": [
+                      "This failure is nearly always caused by input that has no happy path in it. Post-mortems, incident write-ups, and troubleshooting guides describe the branches only; the spine has to be supplied.",
+                      "If your bare list ends in a rejection or a timeout, the polarity is inverted and every branch will hang off the wrong side. Rewrite the list as the route where everything works.",
+                      "Do not try to salvage the modal prose from a wrong-shaped document by hand. It was written about the wrong steps."
+                    ],
+                    "failureModes": [
+                      {
+                        "when": "You cannot write a happy path because there genuinely is not one",
+                        "then": "You have a decision table, not a workflow — model it as a choice with named answers",
+                        "step": "describe-the-process"
+                      },
+                      {
+                        "when": "The list runs to twenty steps",
+                        "then": "There are two workflows in it; split at the point where the trigger changes",
+                        "step": "promote-it-to-a-diagram"
+                      }
+                    ],
+                    "body": "This is the only branch on this diagram that leaves for another diagram rather than looping back, and that is deliberate: choosing exits badly is not a defect in your JSON, it is a missing skill, and the fix is to work the decision explicitly once. Diagram 3 is that decision, in eight questions."
+                  }
+                }
+              ],
+              "exit": {
+                "type": "goto",
+                "workflow": "choose-an-exit",
+                "label": "Work the exit decision first"
+              }
+            }
+          ]
+        },
+        {
+          "id": "render-the-page",
+          "type": "insert",
+          "actorId": "renderer",
+          "title": "Render the document to a page",
+          "note": "Deterministic; the same document always produces the same pixels",
+          "workflow": "render-pipeline",
+          "tag": "< 1 s",
+          "detail": {
+            "purpose": "Turn a validated document into a self-contained HTML page, with every coordinate derived from the document and none of them chosen by you.",
+            "actor": "The renderer — `src/render.mjs`, or the copy of it embedded in this page",
+            "duration": "well under a second for documents of this size",
+            "systems": [
+              "The builder panel in this page",
+              "node src/render.mjs, if you prefer a command line"
+            ],
+            "inputs": [
+              {
+                "label": "Document",
+                "value": "One validated WFD v1 JSON document"
+              }
+            ],
+            "outputs": [
+              {
+                "label": "Page",
+                "value": "One HTML file, self-contained: diagrams, modals, source, renderer, prompt"
+              }
+            ],
+            "procedure": [
+              "Press render in the builder. Nothing is uploaded; the renderer runs in the page.",
+              "The same document at the command line produces a byte-identical file: `node src/render.mjs your.wfd.json -o dist/your.html`.",
+              "Look at the summary line it prints — diagram count, step count, and how many steps rendered without detail. That last number should be zero.",
+              "The rendered page carries the document that produced it. You never need to keep the JSON separately, though you probably want it in version control anyway."
+            ],
+            "rules": [
+              "Rendering is a pure function. If two renders differ, the input differed — that property is what makes a diagram diffable in a pull request.",
+              "The page has no external dependencies. No CDN, no fonts fetched, no scripts phoned home. It works from a file:// URL on a laptop with the wireless off.",
+              "This step is an `insert` rather than a `goto` because control comes back here. Diagram 2 runs and returns; the box itself is the link to it."
+            ],
+            "failureModes": [
+              {
+                "when": "The renderer refuses and prints errors",
+                "then": "It found something the builder's quick check did not; treat it the same way",
+                "step": "copy-the-error-back"
+              },
+              {
+                "when": "The page renders but a diagram is enormously wide",
+                "then": "Lane depth, not renderer behaviour",
+                "step": "find-the-deepest-lane"
+              }
+            ],
+            "links": [
+              {
+                "label": "What the renderer actually does, step by step",
+                "href": "#wf-render-pipeline"
+              }
+            ]
+          }
+        },
+        {
+          "id": "read-the-shape",
+          "type": "question",
+          "actorId": "author",
+          "title": "Does the happy path read as one sentence?",
+          "note": "Left column, top to bottom, without opening anything",
+          "primaryLabel": "Yes",
+          "detail": {
+            "purpose": "Judge the document the way a stranger will: by reading only the leftmost column, at speed, with nothing opened. If that does not work, no amount of modal prose will save the page.",
+            "actor": "You, pretending to be someone else",
+            "duration": "60 seconds — and it must actually be 60 seconds",
+            "procedure": [
+              "Read only lane 0, top to bottom, out loud if you can. It should sound like a sentence: *pick your input, copy the prompt, paste your material, wait, paste into the builder, validate, render, check the shape, check the modals, download, share.*",
+              "Now scan the right margin, ignoring the spine. You should be reading a worst-first list of everything that can go wrong. If the rightmost branch of any question is milder than the one to its left, the branch order is wrong.",
+              "Check the width. Ten lanes is comfortable; more than that and the page starts scrolling sideways, which is the one thing this notation refuses to spend.",
+              "Check the lane depth. A branch of a branch of a branch means you have modelled exceptions of exceptions, and it almost always collapses into one question with three answers."
+            ],
+            "rules": [
+              "Sixty seconds is the budget. If you find yourself opening modals to decide whether the shape is right, the shape is not right.",
+              "Vertical growth is free and horizontal growth is not. A diagram twice as tall is fine; a diagram twice as wide is a design failure.",
+              "Lane depth over four is a hard stop. Promote the deepest branch to its own workflow and reach it with a `goto`."
+            ],
+            "failureModes": [
+              {
+                "when": "The spine reads fine but one question fans four lanes deep",
+                "then": "Collapse the nesting into a single question with named answers",
+                "step": "collapse-a-nested-question"
+              },
+              {
+                "when": "The whole diagram is wider than it is tall",
+                "then": "Promote the heaviest branch to its own diagram and re-describe",
+                "step": "find-the-deepest-lane"
+              }
+            ]
+          },
+          "branches": [
+            {
+              "label": "One lane runs deep",
+              "tone": "info",
+              "note": "Exceptions of exceptions; collapses into one question",
+              "steps": [
+                {
+                  "id": "collapse-a-nested-question",
+                  "type": "action",
+                  "actorId": "author",
+                  "title": "Collapse nested questions into named answers",
+                  "note": "Three yes/no gates in a column are usually one choice",
+                  "detail": {
+                    "purpose": "Trade depth for width at the same question, which costs one lane and buys back three, and usually reveals that the nested gates were asking one question all along.",
+                    "actor": "You, with the model",
+                    "duration": "5 minutes",
+                    "procedure": [
+                      "Find the deepest lane and walk back up to the question that opened it. You are looking for a chain like *is it urgent? → is the customer enterprise? → is it out of hours?*",
+                      "Ask whether those gates jointly select among a small set of named outcomes. Usually they do: *standard*, *expedited*, *page the on-call*.",
+                      "Replace the chain with one `choice` whose branches carry those names, and move the conditions themselves into `detail.rules` on the choice, where they can be stated with their actual thresholds.",
+                      "Ask the model for the rewrite by naming the step: *the nesting under `triage-severity` is three gates deep; collapse it into one choice with branches named X, Y, Z and keep the thresholds in the detail*."
+                    ],
+                    "rules": [
+                      "A `choice` may have up to about eight answers before it stops being readable. Past that, the answers belong in a table referenced from an `action`, not on the canvas.",
+                      "Do not collapse gates that genuinely happen at different times. Two questions separated by real work on the spine are two questions.",
+                      "Conditions moved into `detail.rules` must keep their numbers. \"Urgent\" is not a rule; \"P1, or any P2 touching billing\" is."
+                    ],
+                    "failureModes": [
+                      {
+                        "when": "The gates do not share a decision",
+                        "then": "They belong at different points on the spine; move them apart rather than collapsing",
+                        "step": "describe-the-process"
+                      },
+                      {
+                        "when": "Collapsing produces nine branches",
+                        "then": "The decision is a table; reference it from an action step",
+                        "step": "check-the-modals"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "continue"
+              }
+            },
+            {
+              "label": "Too wide to scan",
+              "tone": "warn",
+              "note": "More than ten lanes; the page scrolls sideways",
+              "steps": [
+                {
+                  "id": "find-the-deepest-lane",
+                  "type": "action",
+                  "actorId": "author",
+                  "title": "Find the branch carrying the most steps",
+                  "note": "Usually one branch is doing a diagram's worth of work",
+                  "detail": {
+                    "purpose": "Locate the specific branch responsible for the width, because width is almost never spread evenly — one branch is carrying a whole second process.",
+                    "actor": "You",
+                    "duration": "3 minutes",
+                    "procedure": [
+                      "Count steps per branch. Any branch with six or more is a diagram by the format's own rule of thumb, and the renderer emits a warning saying so.",
+                      "Count lanes per question. A question with five branches is a `choice` that has not admitted it, and a question with one branch that itself fans three ways is nesting.",
+                      "Note whether the heavy branch has its own trigger. \"The customer disputes the charge\" starts on its own, from outside — that is a different workflow, not a detour.",
+                      "Note whether the heavy branch has a different owner *and* a different success condition. Both together is the strongest signal that it should be promoted."
+                    ],
+                    "rules": [
+                      "Width comes from lane count and lane count comes from branch count. Removing steps from a branch does not narrow anything; removing the branch does.",
+                      "An empty branch — a pure bypass with no steps — costs a narrow column rather than a full one. Bypasses are cheap; steps are not."
+                    ],
+                    "failureModes": [
+                      {
+                        "when": "Every branch is roughly the same size",
+                        "then": "There are genuinely too many exceptions on one step; that step is three steps",
+                        "step": "describe-the-process"
+                      },
+                      {
+                        "when": "The width comes from one question with seven branches",
+                        "then": "Make it a choice and put the rare answers in a table",
+                        "step": "collapse-a-nested-question"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "promote-it-to-a-diagram",
+                  "type": "action",
+                  "actorId": "author",
+                  "title": "Promote that branch to its own workflow",
+                  "note": "Replace it with a goto chip, or an insert if control returns",
+                  "detail": {
+                    "purpose": "Move a branch that has grown into a process out of the diagram it was cluttering, and leave behind a one-line reference the reader can follow when they need it.",
+                    "actor": "You, with the model",
+                    "duration": "one more generation",
+                    "procedure": [
+                      "Decide first whether control returns. If the caller carries on afterwards, the branch becomes an `insert` step on the spine and the box is a link. If it does not, the branch keeps its steps up to the point of departure and terminates in a `goto` chip.",
+                      "Give the new workflow its own trigger and its own outcome. If you cannot state a trigger that is different from the caller's, it is not a separate workflow and you should collapse instead.",
+                      "Tell the model exactly that: *promote the `dispute` branch of workflow 1 into its own workflow; it has its own trigger and does not return, so end the branch with a goto*.",
+                      "Re-describe rather than re-render. This change alters the shape of both diagrams, so it goes back through the model, not through the builder."
+                    ],
+                    "rules": [
+                      "`insert` when control returns; `goto` when it does not. Getting this backwards produces a diagram that quietly lies about whether anything happens after the detour.",
+                      "A promoted workflow needs its own `summary`, its own phases if the original had them, and its own modals. It is not a fragment; it is a diagram.",
+                      "Two to six workflows per document is the comfortable range. Past eight you have usually split on data variation rather than process variation."
+                    ],
+                    "failureModes": [
+                      {
+                        "when": "The promoted workflow has three steps",
+                        "then": "It was not a workflow; inline it back and collapse the nesting instead",
+                        "step": "collapse-a-nested-question"
+                      },
+                      {
+                        "when": "Both diagrams now goto each other in a loop",
+                        "then": "One of the two links is really an insert — find the one where control returns",
+                        "step": "reread-the-exit-rules"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "goback",
+                "to": "describe-the-process",
+                "label": "Re-describe with the split"
+              }
+            }
+          ]
+        },
+        {
+          "id": "check-the-modals",
+          "type": "question",
+          "actorId": "author",
+          "title": "Is every box worth opening?",
+          "note": "Open all of them; this is the actual review",
+          "primaryLabel": "Yes",
+          "tag": "15 min",
+          "detail": {
+            "purpose": "Review the deliverable. The diagram is an index and takes a minute to check; the modals are the material and take fifteen. This step is where a page stops being a picture.",
+            "actor": "You, and ideally one person who runs the process",
+            "duration": "15–25 minutes for a three-diagram document",
+            "procedure": [
+              "Open every box, in order, including the ones on the far right that you are tempted to skip. The far-right ones are where the model had the least material and invented the most.",
+              "For each modal, ask a single question: **does this contain a fact the box title does not?** A `purpose` that restates the title, a `procedure` that lists the title as its only bullet, and `rules` with no numbers in them are all the same failure.",
+              "Check the numbers specifically. Every threshold, timeout, retry count, and dollar figure is either something you supplied, or something the model invented and you are about to publish under your name.",
+              "Check the `failureModes`. Each one should name a real step id, and following it should land somewhere sensible. A failure mode that points at the step it is written on is a placeholder."
+            ],
+            "rules": [
+              "The bar is 150 words of substance per step. Below that the step is usually two steps merged, or one step too small to draw.",
+              "Invented specifics are the one genuinely dangerous output of this process. A wrong diagram is obvious; a plausible wrong threshold in a modal will be followed.",
+              "Have someone who actually runs the process read four modals at random. They will find the one that is subtly wrong faster than you will."
+            ],
+            "failureModes": [
+              {
+                "when": "Several modals restate their titles",
+                "then": "Name them by id and ask for a detail pass on those steps only",
+                "step": "list-the-thin-steps"
+              },
+              {
+                "when": "A threshold is wrong",
+                "then": "Correct it in the source material and regenerate rather than hand-editing the JSON",
+                "step": "describe-the-process"
+              },
+              {
+                "when": "A whole workflow reads as invented",
+                "then": "The source material did not cover it; either supply material or delete the workflow",
+                "step": "request-a-detail-pass"
+              }
+            ]
+          },
+          "branches": [
+            {
+              "label": "A few read thin",
+              "tone": "info",
+              "note": "Restated titles, rules without numbers, empty procedures",
+              "steps": [
+                {
+                  "id": "list-the-thin-steps",
+                  "type": "action",
+                  "actorId": "author",
+                  "title": "List the thin steps by id",
+                  "note": "By id, with what is missing from each",
+                  "detail": {
+                    "purpose": "Produce a targeted repair list so the next generation improves the weak modals instead of rewriting the strong ones, which is what happens when you ask for \"more detail\" globally.",
+                    "actor": "You",
+                    "duration": "5 minutes",
+                    "procedure": [
+                      "Write a list of step ids — the ids, not the titles — with one clause each naming the specific gap: *`verify-identity`: no thresholds; `notify-customer`: procedure restates the title; `park-the-case`: failure modes point at itself.*",
+                      "Group them by cause. Thin modals cluster: they are usually the steps your source material said the least about, and often they cluster in one workflow.",
+                      "For each cluster, decide whether the fix is more model effort or more source material. If you do not know the answer either, the model will invent one.",
+                      "Supply what you know before asking. Two sentences of real operational detail per thin step turns a repair round into a good one."
+                    ],
+                    "rules": [
+                      "Ask by id. Asking by title invites the model to rewrite titles, which changes ids, which breaks every `goback` and `goto` pointing at them.",
+                      "Never ask for \"more detail everywhere\". The strong modals get diluted and the weak ones get longer without getting more specific."
+                    ],
+                    "failureModes": [
+                      {
+                        "when": "More than a third of the steps are thin",
+                        "then": "The source material was too thin, not the generation",
+                        "step": "describe-the-process"
+                      },
+                      {
+                        "when": "The thin steps are all in one workflow",
+                        "then": "That workflow was extrapolated; supply material or cut it",
+                        "step": "request-a-detail-pass"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "request-a-detail-pass",
+                  "type": "action",
+                  "actorId": "model",
+                  "title": "Ask for a detail pass on those steps only",
+                  "note": "Same structure, same ids, deeper modals",
+                  "detail": {
+                    "purpose": "Get a second generation that changes nothing structural and improves only the named modals, so that everything you already reviewed stays reviewed.",
+                    "actor": "The model, then you",
+                    "duration": "one generation",
+                    "procedure": [
+                      "Send the list with an explicit constraint: *keep every id, title, type, branch, and exit exactly as they are. Only expand `detail` on these steps. Return the full document.*",
+                      "Paste in whatever operational facts you have for those steps. Two real sentences beat a paragraph of instruction about how to write.",
+                      "When it returns, spot-check three modals you did *not* ask about, to confirm the structural freeze held. Models drift under revision.",
+                      "Then re-render and re-read, but only the steps you asked about — this is a targeted round, not another full review."
+                    ],
+                    "rules": [
+                      "Freeze ids explicitly, every time. An id that changes silently turns a working `goback` chip into a validation error two rounds later.",
+                      "If the second pass is still thin on the same step, the step is probably not a real step. Merge it into its neighbour or delete it.",
+                      "This loop terminates. Three passes on the same steps means the information does not exist and you should say so in `detail.rules` rather than manufacture it."
+                    ],
+                    "failureModes": [
+                      {
+                        "when": "The detail pass changed the branch structure",
+                        "then": "Reject it and re-ask with the freeze stated first",
+                        "step": "paste-into-builder"
+                      },
+                      {
+                        "when": "New modals are long but still generic",
+                        "then": "You are asking for prose where you should be supplying facts",
+                        "step": "describe-the-process"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "goback",
+                "to": "wait-for-the-model",
+                "label": "Generate the detail pass"
+              }
+            }
+          ]
+        },
+        {
+          "id": "download-the-page",
+          "type": "output",
+          "actorId": "author",
+          "title": "Download the single HTML file",
+          "note": "No server, no build, no dependencies",
+          "destination": "A file on your machine",
+          "tag": "1 file",
+          "detail": {
+            "purpose": "Take away one artefact that contains everything: the diagrams, the modals, the JSON that produced them, the renderer, and the prompt that produces the JSON.",
+            "actor": "You",
+            "duration": "instant",
+            "outputs": [
+              {
+                "label": "HTML file",
+                "value": "Self-contained; opens from file:// with no network"
+              },
+              {
+                "label": "Embedded source",
+                "value": "The full WFD document, recoverable from the page itself"
+              }
+            ],
+            "procedure": [
+              "Press download in the builder. The file is written straight from the page; nothing round-trips through a server.",
+              "Name it after the process, not after the tool. `weekly-release.html` will still make sense to someone in eighteen months; `workflow-final-v3.html` will not.",
+              "Also keep the `.wfd.json`. The page carries a copy, but the JSON is what belongs in version control — it diffs like text, and a changed threshold shows up as one changed line.",
+              "Open the downloaded file with the network disabled once, to confirm for yourself that it is genuinely self-contained. It is, but the check takes five seconds and buys confidence you will need when you mail it to someone."
+            ],
+            "rules": [
+              "No CDN, no analytics, no fonts fetched at load. That is a property worth preserving: it is what makes the file safe to send into an environment you do not control.",
+              "The page carries the prompt, so the recipient can make the next one without ever finding this site again. That is the point.",
+              "If the process is confidential, remember that the modals contain everything. This file travels as far as the material inside it allows, and no further."
+            ],
+            "failureModes": [
+              {
+                "when": "The file is very large",
+                "then": "It is modal prose, which is the deliverable — a few hundred KB is normal and it still opens instantly"
+              },
+              {
+                "when": "You need it in a wiki",
+                "then": "Attach the file rather than pasting the markup; a wiki will strip the styling and the modal behaviour"
+              }
+            ]
+          }
+        },
+        {
+          "id": "share-the-file",
+          "type": "action",
+          "actorId": "author",
+          "title": "Put it in front of the people who run the process",
+          "note": "And commit the JSON next to the code it describes",
+          "detail": {
+            "purpose": "Close the loop. A diagram nobody was sent is a diagram that describes what the process was on the day it was written.",
+            "actor": "You",
+            "duration": "10 minutes now, then whenever the process changes",
+            "procedure": [
+              "Send the file to the people who actually run the process, and ask them for the one box that is wrong. There is always one, and asking for exactly one gets you a reply.",
+              "Commit the `.wfd.json` alongside the system it describes — in the service repo, not in a documentation repo. Documentation that lives elsewhere drifts on a predictable schedule.",
+              "Add the render command to whatever already runs on merge, so the page regenerates from the JSON rather than being maintained as a second artefact.",
+              "Link the page from the places people already look: the runbook header, the on-call rota, the onboarding checklist. Nobody goes to a documentation site on purpose."
+            ],
+            "rules": [
+              "Review the JSON in pull requests, not the HTML. The JSON diff shows that a threshold changed; the HTML diff shows that three thousand coordinates changed.",
+              "One owner per document, named in `meta.author`. Shared ownership of documentation means no ownership.",
+              "Regenerate rather than patch when the process changes materially. The prompt is cheap; a document maintained by hand for a year is not."
+            ],
+            "failureModes": [
+              {
+                "when": "Nobody responds to the share",
+                "then": "Ask one person for one specific box; broad requests for feedback get none",
+                "step": "check-the-modals"
+              },
+              {
+                "when": "The process changes a month later",
+                "then": "Update the source material and regenerate — the loop is designed to be re-run, not maintained",
+                "step": "describe-the-process"
+              }
+            ]
+          }
+        }
+      ],
+      "end": {
+        "label": "The process is written down where people will find it",
+        "tone": "success",
+        "note": "One file, every box worth opening, able to make the next one"
+      }
+    },
+    {
+      "id": "render-pipeline",
+      "title": "What the renderer does to your document",
+      "description": "Fourteen stages between a validated JSON document and an SVG, none of which consult a browser, a random number, or a heuristic. This is the diagram that makes the determinism claim checkable: read it and you can predict, from a document alone, exactly where every box will land. Three of the stages can refuse, and refusing is the whole point of them.",
+      "lens": "generic",
+      "summary": {
+        "trigger": "A WFD document arrives at the renderer — from the builder panel, from `node src/render.mjs`, or from CI on merge",
+        "outcome": "One SVG per workflow, embedded in a self-contained HTML page, byte-identical to every other render of the same document",
+        "owner": "`src/layout.mjs` for geometry, `src/svg.mjs` for the drawing, `src/page.mjs` for the page",
+        "duration": "single-digit milliseconds per workflow",
+        "frequency": "Every render, every validate, every CI run"
+      },
+      "phases": [
+        {
+          "label": "Read",
+          "from": "read-the-document",
+          "to": "assign-lane-indices"
+        },
+        {
+          "label": "Check",
+          "from": "layer-the-rows",
+          "to": "check-the-directions"
+        },
+        {
+          "label": "Measure",
+          "from": "reserve-fan-rows",
+          "to": "position-lanes-and-rows"
+        },
+        {
+          "label": "Draw",
+          "from": "allocate-merge-bands",
+          "to": "emit-the-svg"
+        }
+      ],
+      "start": {
+        "label": "A WFD document is handed to the renderer",
+        "note": "From the builder panel, a file path, or a CI step"
+      },
+      "steps": [
+        {
+          "id": "read-the-document",
+          "type": "input",
+          "actorId": "renderer",
+          "title": "Read the document and check its shape",
+          "note": "Version, ids, types, tones, branch cardinality",
+          "source": "The builder's source box, a file path, or several files merged",
+          "detail": {
+            "purpose": "Establish that this is a WFD v1 document and that its identifiers are usable, before any geometry is computed against something that may not be a document at all.",
+            "actor": "`buildDocument()` in `src/layout.mjs`",
+            "duration": "sub-millisecond",
+            "inputs": [
+              {
+                "label": "Document",
+                "value": "Parsed JSON — the renderer never sees the text form"
+              },
+              {
+                "label": "Density",
+                "value": "`theme.density`, `comfortable` or `compact`; selects the whole geometry constant table"
+              }
+            ],
+            "outputs": [
+              {
+                "label": "Workflow index",
+                "value": "id → display number and title, used later to label goto chips"
+              }
+            ],
+            "procedure": [
+              "Require `wfd === 1` — the integer, not the string. A version this code does not understand is refused rather than guessed at.",
+              "Require a document title and at least one workflow. An empty `workflows` array short-circuits here and returns errors without attempting layout.",
+              "Walk the workflows once to check id uniqueness and build the number map. Workflow *numbers* are positional — the first workflow is diagram 1 — which is why document order is an authoring decision rather than a cosmetic one.",
+              "Warn on any workflow with no `summary`. It is not fatal, but a workflow with no stated trigger and outcome is one nobody has finished thinking about.",
+              "Select the density table now. Every constant downstream — `NODE_W 236`, `LANE_GAP 44`, `ROW_GAP 34`, `BAND_GAP 14`, `PAD 28` — comes from this one choice, and compact multiplies the gaps by 0.72."
+            ],
+            "rules": [
+              "Several documents can be merged into one page by passing several files; the first document's title and glossary win and the workflow arrays concatenate.",
+              "Nothing here looks at the browser, the filesystem beyond reading, the clock, or the locale. The output of the whole pipeline is a function of this object and nothing else.",
+              "Errors accumulate rather than throwing. One bad document should report all of its problems in one run, not the first one it hits."
+            ],
+            "failureModes": [
+              {
+                "when": "`wfd` is `\"1\"` rather than `1`",
+                "then": "Refused with an explicit expected-1 hint; a string version is the single most common hand-edit mistake"
+              },
+              {
+                "when": "Two workflows share an id",
+                "then": "Refused — goto chips would be ambiguous",
+                "step": "name-the-back-edge"
+              },
+              {
+                "when": "A workflow has no summary",
+                "then": "Warned, not refused; the fact strip renders empty"
+              }
+            ]
+          }
+        },
+        {
+          "id": "flatten-the-tree",
+          "type": "action",
+          "actorId": "renderer",
+          "title": "Flatten the nested document into nodes and edges",
+          "note": "Depth-first; branches become lanes as the walk descends",
+          "detail": {
+            "purpose": "Convert the author's nested, human-friendly structure — steps containing branches containing steps — into the flat node and edge lists that every later stage operates on.",
+            "actor": "`flatten()` in `src/layout.mjs`",
+            "duration": "linear in node count",
+            "outputs": [
+              {
+                "label": "nodes[]",
+                "value": "Every step, plus the start terminal, the end terminal, and one node per end / goback / goto chip"
+              },
+              {
+                "label": "edges[]",
+                "value": "Typed: `seq`, `fan`, `merge`, `bypass`"
+              }
+            ],
+            "procedure": [
+              "Emit the `start` terminal first, then walk the workflow's `steps` array as lane 0, in order, emitting one node per step and one `seq` edge between consecutive steps.",
+              "At each `question` or `choice`, walk its branches in array order. Each branch opens a new lane and its steps are emitted recursively, producing a `fan` edge from the question to the branch's first node.",
+              "Emit the workflow's `end` terminal and a `seq` edge into it from the last lane-0 step.",
+              "Resolve branch exits in two passes. Pass A creates the nodes that exits produce — the terminal stadiums for `end`, and the chips for `goback` and `goto`. Pass B resolves the exits that produce no node — `continue` and `join` — into `merge` edges, or into `bypass` edges when the branch has no steps of its own.",
+              "Resolve `continue` lazily. It means *the step immediately after the owning question*, which may itself be the owning lane's exit if the question was that lane's last step — so it can chain, and the chain is walked with a visited set."
+            ],
+            "rules": [
+              "Chips are leaves. A `goback` or `goto` node has an incoming edge and no outgoing edge, which is what makes rule three — no upward lines — hold by construction rather than by inspection.",
+              "An empty branch produces no nodes at all. It becomes a single `bypass` edge from the question straight to the merge target, and its lane renders as a narrow empty column rather than a full-width one.",
+              "Display numbers are assigned here and only here: lane 0 counts `1, 2, 3`; branches letter as `a, b, c` in array order; a step inside branch `a` of step 4 is `4a.1`. An author who writes numbers into titles is now permanently out of step with the renderer."
+            ],
+            "failureModes": [
+              {
+                "when": "A branch has no `exit`",
+                "then": "Refused during the walk — a dangling branch has no defined geometry"
+              },
+              {
+                "when": "A `continue` chain cannot resolve",
+                "then": "Refused; this happens when a question is the last step of a branch whose own exit is a chip"
+              },
+              {
+                "when": "A `join` names a step that does not exist",
+                "then": "Refused with the offending id quoted",
+                "step": "check-the-directions"
+              }
+            ]
+          }
+        },
+        {
+          "id": "assign-lane-indices",
+          "type": "shelf",
+          "actorId": "renderer",
+          "title": "Assign every lane its index and depth",
+          "note": "A global counter, incremented on descent — never reordered",
+          "assign": [
+            {
+              "name": "lane.index",
+              "value": "global counter, incremented at the moment the walk descends into a branch"
+            },
+            {
+              "name": "lane.depth",
+              "value": "parent.depth + 1; lane 0 has depth 0"
+            },
+            {
+              "name": "lane.tone",
+              "value": "inherited from the branch that opened it"
+            }
+          ],
+          "detail": {
+            "purpose": "Fix the horizontal order of every column, permanently, using the one property that makes *further right = more exceptional* true by construction instead of by an author's discipline.",
+            "actor": "`newLane()` in `src/layout.mjs`",
+            "duration": "part of the same walk",
+            "outputs": [
+              {
+                "label": "lane.index",
+                "value": "0..n, unique, monotonically increasing in walk order"
+              },
+              {
+                "label": "lane.depth",
+                "value": "nesting depth from lane 0"
+              }
+            ],
+            "procedure": [
+              "Increment a single global counter at the moment the depth-first walk descends into a branch, and never again.",
+              "Because the walk is depth-first and branches are visited in array order, a branch's lane index is always greater than its parent's, and a later sibling's is always greater than an earlier sibling's — including all of the earlier sibling's descendants.",
+              "Record the parent pointer as well as the index. The `join` rule needs to ask whether a target is in an *ancestor* lane, which is a tree question, not an arithmetic one.",
+              "Carry the branch's `tone` onto the lane, so that every node and every line in that lane inherits its colour unless a step overrides it."
+            ],
+            "rules": [
+              "Lanes are never reordered, never packed, and never reused. Column `n` belongs to lane `n` for the life of the diagram, which is what keeps the layout a pure function of document order.",
+              "This is why branch array order is a design decision. The author orders branches least severe to most severe; the counter turns that order into horizontal distance; the reader reads severity off the x-axis.",
+              "A lane that ends up holding no nodes — the empty-branch bypass — still consumes an index, but renders as a narrow column rather than a full-width one."
+            ],
+            "failureModes": [
+              {
+                "when": "Lane depth exceeds 8",
+                "then": "Refused; a diagram with nine levels of nested exception is not a diagram anyone can read"
+              },
+              {
+                "when": "A join points to a lane that is not an ancestor",
+                "then": "Caught later by the direction check, using the parent pointers recorded here",
+                "step": "check-the-directions"
+              }
+            ]
+          }
+        },
+        {
+          "id": "layer-the-rows",
+          "type": "action",
+          "actorId": "renderer",
+          "title": "Layer rows by longest path",
+          "note": "row(n) = 1 + max(row(p)) over every predecessor",
+          "detail": {
+            "purpose": "Fix the vertical position of every node with one rule that guarantees a node always sits below everything that can reach it — which is what makes merges point downward without anybody arranging for it.",
+            "actor": "`assignRows()` in `src/layout.mjs`",
+            "duration": "linear; memoised depth-first",
+            "procedure": [
+              "Build predecessor and successor lists from the edge list. Every edge type participates except those terminating at chips, which are leaves and cannot influence anyone's row.",
+              "Set `row(start) = 0`. For every other node, `row(n) = 1 + max(row(p))` over all predecessors `p`.",
+              "Evaluate it as a memoised depth-first recursion with a three-state visited marker: unvisited, on the stack, done. A node found on the stack means the graph has a cycle, and the traversal records that rather than looping forever.",
+              "Note the consequence for merges: a node that is both the next step on the spine *and* the target of a branch merge gets its row from whichever is later, so the merge line always has somewhere to come down from."
+            ],
+            "rules": [
+              "Longest path, not shortest, and not topological order. Shortest path would let a merge target sit level with the branch merging into it, which would require a horizontal line where a box already is.",
+              "Rows are indices, not pixels. Row *heights* are computed much later, from text, and a row is exactly as tall as the tallest box in it.",
+              "Nothing about this stage looks at lanes. Vertical and horizontal placement are computed independently, which is why adding a branch never moves anything vertically except the things downstream of it."
+            ],
+            "failureModes": [
+              {
+                "when": "The recursion finds a node already on the stack",
+                "then": "A cycle exists; the flag is set and the next stage refuses",
+                "step": "check-the-graph"
+              },
+              {
+                "when": "A node has no predecessors and is not `start`",
+                "then": "It is unreachable — flagged separately, since the diagram no longer proves reachability the way a DRAKON silhouette would"
+              }
+            ]
+          }
+        },
+        {
+          "id": "check-the-graph",
+          "type": "question",
+          "actorId": "renderer",
+          "title": "Is the flow graph acyclic?",
+          "note": "It is a DAG by construction — unless an exit lied",
+          "primaryLabel": "Yes",
+          "detail": {
+            "purpose": "Refuse to draw a document whose edges form a loop, because there is no legal geometry for one: every line travels downward, and a cycle would require at least one that does not.",
+            "actor": "`assignRows()`, reported by `buildDocument()`",
+            "duration": "free — the flag was set during layering",
+            "procedure": [
+              "Read the cycle flag set by the layering traversal. It is set when the depth-first walk encounters a node that is already on its own stack.",
+              "If set, emit one error against the workflow with the hint *a backward edge must be drawn as a goback chip, not a join*, and stop. No SVG is produced for any workflow in the document.",
+              "The check is structural rather than advisory. A document with a cycle has no rendering, not a bad rendering."
+            ],
+            "rules": [
+              "Well-formed documents cannot reach this error. Chips are leaves, `fan` edges go from a question into its own subtree, and `merge` edges point at ancestors — so the only way to build a cycle is a `join` that points at a step which transitively reaches the branch it came from.",
+              "This is the check that replaces DRAKON's silhouette guarantee. A silhouette cannot contain unreachable or looping structure because the layout forbids it; we allow unlimited vertical growth instead, so the property has to be asserted here.",
+              "Refusing is deliberate. A renderer that drew *something* for a cyclic document would be teaching its users that the five promises are approximate."
+            ],
+            "failureModes": [
+              {
+                "when": "Two branches join into each other",
+                "then": "Classic cycle; one of the two is a `goback`",
+                "step": "name-the-back-edge"
+              },
+              {
+                "when": "A join points at the question that owns the branch",
+                "then": "Always a cycle, and always meant to be a `goback`",
+                "step": "name-the-back-edge"
+              }
+            ]
+          },
+          "branches": [
+            {
+              "label": "It contains a cycle",
+              "tone": "error",
+              "note": "Some edge closes a loop; there is no geometry for that",
+              "steps": [
+                {
+                  "id": "name-the-back-edge",
+                  "type": "action",
+                  "actorId": "validator",
+                  "title": "Report the cycle against the workflow",
+                  "note": "With the goback hint attached",
+                  "detail": {
+                    "purpose": "Give the author the one sentence that fixes it, rather than a graph-theory complaint they have to translate.",
+                    "actor": "The error collector",
+                    "duration": "instant",
+                    "outputs": [
+                      {
+                        "label": "Error",
+                        "value": "`workflows[i]` · the flow graph contains a cycle"
+                      },
+                      {
+                        "label": "Hint",
+                        "value": "a backward edge must be drawn as a goback chip, not a join"
+                      }
+                    ],
+                    "procedure": [
+                      "Attach the error to the workflow rather than to a single edge. A cycle is a property of a set of edges and naming one of them arbitrarily would send the author to the wrong place.",
+                      "Attach the hint. In practice a cycle in this format is always one exit that should have been a `goback`, and the hint says exactly that.",
+                      "Suppress all output for the whole document. Partial rendering of a document with a structural error is worse than none, because the diagram it produces looks finished."
+                    ],
+                    "rules": [
+                      "The author-side fix is always the same shape: find the exit that points backwards in reading order and change its type from `join` to `goback`. The target usually does not change.",
+                      "If several exits look backwards, the earliest one in document order is nearly always the real culprit and the rest are consequences."
+                    ],
+                    "failureModes": [
+                      {
+                        "when": "The author converts the wrong exit",
+                        "then": "The cycle persists and the same error repeats — work the exit decision explicitly",
+                        "step": "check-the-directions"
+                      }
+                    ],
+                    "links": [
+                      {
+                        "label": "How to choose the right exit",
+                        "href": "#wf-choose-an-exit"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "end",
+                "label": "Nothing is drawn · cycle reported",
+                "tone": "failure",
+                "note": "Exit code 1; no HTML written for any workflow"
+              }
+            }
+          ]
+        },
+        {
+          "id": "check-the-directions",
+          "type": "question",
+          "actorId": "renderer",
+          "title": "Does every merge and chip point a legal way?",
+          "note": "Merges go down and left; gobacks point at or above",
+          "primaryLabel": "Yes",
+          "detail": {
+            "purpose": "Enforce the two directional laws that the whole visual contract rests on, now that rows exist and direction is finally a computable fact rather than an authoring intention.",
+            "actor": "`checkDirections()` in `src/layout.mjs`",
+            "duration": "linear in edge count",
+            "procedure": [
+              "For every `merge` and `bypass` edge, require that the target's row is strictly greater than the source's. A merge that points level or upward would need a line travelling up, which the notation does not have.",
+              "For the same edges, require that the target's lane index is less than or equal to the source's. A merge travelling right would be a branch, not a merge, and would cross lanes that do not belong to it.",
+              "For every `goback` chip, require that the target's row is less than or equal to the chip's own row. A chip pointing downward is not a retry; it is a forward jump, and forward jumps are merges.",
+              "Attach a hint to each failure naming the correct exit type and quoting the target's id, so the fix is a copy-paste rather than a diagnosis."
+            ],
+            "rules": [
+              "This check runs *after* the fan-row reservation pass, because that pass moves rows. Checking direction before rows are final would produce errors that disappear on the next run, which is the worst kind.",
+              "Rows only ever increase during repair, and repair pushes a node's successors down with it — so a legal merge cannot become illegal as a side effect of someone else's collision.",
+              "The lane rule is stated as *ancestor or self* in the spec and implemented as *lane index less than or equal* here. Because lane indices are assigned depth-first, the arithmetic version is exactly equivalent for the merge case."
+            ],
+            "failureModes": [
+              {
+                "when": "A retry was written as a join",
+                "then": "Refused, with the goback replacement quoted",
+                "step": "suggest-a-goback-chip"
+              },
+              {
+                "when": "A forward skip was written as a goback",
+                "then": "Refused, with the join replacement quoted",
+                "step": "suggest-a-join"
+              },
+              {
+                "when": "A join points into a sibling branch",
+                "then": "Refused on the lane rule — sibling lanes are never ancestors"
+              }
+            ]
+          },
+          "branches": [
+            {
+              "label": "A join points upward",
+              "tone": "warn",
+              "note": "The target is at or above the branch that merges into it",
+              "steps": [
+                {
+                  "id": "suggest-a-goback-chip",
+                  "type": "output",
+                  "actorId": "validator",
+                  "title": "Emit the error with the goback replacement quoted",
+                  "note": "change this exit to { type: goback, to: ... }",
+                  "destination": "stderr, and the builder's error panel",
+                  "detail": {
+                    "purpose": "Turn a layout law into a one-line edit, by printing the JSON the author should paste rather than the rule they violated.",
+                    "actor": "The error collector",
+                    "duration": "instant",
+                    "outputs": [
+                      {
+                        "label": "Path",
+                        "value": "`workflows[i] merge 4a.2 -> 3` — display numbers, because that is what the author is looking at"
+                      },
+                      {
+                        "label": "Hint",
+                        "value": "`change this exit to { \"type\": \"goback\", \"to\": \"validate-cart\" }`"
+                      }
+                    ],
+                    "procedure": [
+                      "Name the offending edge by the *display numbers* of its endpoints, not by array indices. The author is reading a diagram, and `4a.2 -> 3` locates it instantly.",
+                      "Quote the literal replacement object, with the real target id already filled in.",
+                      "Say what is wrong in one clause — *a join/continue exit points at a step that is not below it* — and let the hint carry the fix.",
+                      "Continue collecting. All direction errors in a document are reported in one run, because they usually share a cause and the author wants to see the cluster."
+                    ],
+                    "rules": [
+                      "The overwhelmingly common instance of this error is a retry loop drawn as a merge. Retries go up; up is a chip.",
+                      "The target id is almost always correct. It is the exit *type* that is wrong, which is why the hint keeps the id and changes only the type."
+                    ],
+                    "failureModes": [
+                      {
+                        "when": "The author changes the target instead of the type",
+                        "then": "The error moves rather than clearing; the hint deliberately keeps the id to discourage this"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "end",
+                "label": "Nothing is drawn · join points up",
+                "tone": "failure",
+                "note": "Reported with the goback replacement quoted"
+              }
+            },
+            {
+              "label": "A goback points downward",
+              "tone": "error",
+              "note": "The chip's target is below it — that is a forward merge",
+              "steps": [
+                {
+                  "id": "suggest-a-join",
+                  "type": "output",
+                  "actorId": "validator",
+                  "title": "Emit the error with the join replacement quoted",
+                  "note": "this is a forward merge — use { type: join, to: ... }",
+                  "destination": "stderr, and the builder's error panel",
+                  "detail": {
+                    "purpose": "Catch the inverse mistake — a forward skip drawn as a back-reference — which is rarer than the upward join and considerably more confusing when it renders, because a chip pointing forwards silently breaks the reader's model of the page.",
+                    "actor": "The error collector",
+                    "duration": "instant",
+                    "outputs": [
+                      {
+                        "label": "Path",
+                        "value": "`workflows[i] goback -> 9`"
+                      },
+                      {
+                        "label": "Hint",
+                        "value": "`this is a forward merge — use { \"type\": \"join\", \"to\": \"settle-payment\" }`"
+                      }
+                    ],
+                    "procedure": [
+                      "Compare the chip's own row against its target's row. The chip sits one row below the last node of its branch, so a target below it is unambiguously forward.",
+                      "Quote the join replacement with the target id preserved.",
+                      "Note in passing that `continue` may be the better answer: if the target happens to be the very next step after the owning question, `continue` says the same thing with no target to keep in sync."
+                    ],
+                    "rules": [
+                      "This error usually means the author reached for `goback` as a general-purpose jump. It is not one; it is specifically the up-arrow.",
+                      "If the target is the immediate successor of the owning question, prefer `continue` over `join`. Fewer names, fewer things to rename later."
+                    ],
+                    "failureModes": [
+                      {
+                        "when": "Converting to a join then fails the lane rule",
+                        "then": "The target is in a sibling branch, which is never a legal merge target — the branch really wants its own diagram"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "end",
+                "label": "Nothing is drawn · goback points down",
+                "tone": "failure",
+                "note": "Reported with the join replacement quoted"
+              }
+            }
+          ]
+        },
+        {
+          "id": "reserve-fan-rows",
+          "type": "action",
+          "actorId": "renderer",
+          "title": "Reserve each question's row across the lanes to its right",
+          "note": "So a fan line can never strike a box",
+          "detail": {
+            "purpose": "Guarantee that the horizontal segment carrying a question's branches has an empty corridor to travel through, by pushing any box that shares its row further right down a row.",
+            "actor": "`reserveFanRows()` in `src/layout.mjs`",
+            "duration": "bounded sweeps; rows only ever increase",
+            "procedure": [
+              "Sweep rows from the top. At each row, collect the questions and choices that fan branches from it, and take the leftmost such lane as the guard lane.",
+              "Find every node in that same row whose lane index is greater than the guard lane. Those are the boxes the fan line would pass through.",
+              "Push each offender down one row, and recursively push its successors down to stay one row below it. Because rows only increase and successors follow, the process is monotone and terminates.",
+              "Re-examine the same row after a push, since moving a node changes what occupies the row, then continue upward-to-downward.",
+              "The result is the invariant the fan geometry depends on: at a question's row, every lane to its right is empty, so the branch line runs clear from the question's right vertex to the furthest branch lane."
+            ],
+            "rules": [
+              "Longest-path layering does not give this for free. Two independent subtrees can easily land a box at the same row as an unrelated question further left, and the fan line would cross it.",
+              "Pushing down is always safe. It cannot create a merge that points upward, because a node's successors are pushed with it.",
+              "This is why the direction check runs afterwards. Rows are not final until this pass has finished, and an error computed against non-final rows is an error that comes and goes."
+            ],
+            "failureModes": [
+              {
+                "when": "A question fans into a very deep subtree",
+                "then": "The reservation cascades and the diagram gets taller — which is the trade the whole design makes deliberately"
+              },
+              {
+                "when": "Two questions occupy the same row in different lanes",
+                "then": "The leftmost is the guard, so the corridor is reserved for both",
+                "step": "measure-and-size-boxes"
+              }
+            ]
+          }
+        },
+        {
+          "id": "measure-and-size-boxes",
+          "type": "action",
+          "actorId": "renderer",
+          "title": "Measure every label from the character-width table",
+          "note": "Never from the DOM; the browser is not consulted",
+          "detail": {
+            "purpose": "Compute the height of every box from its text without asking a browser, which is the single decision that makes the output byte-identical across machines, fonts, and platforms.",
+            "actor": "`sizeNodes()` and `src/text.mjs`",
+            "duration": "linear in characters",
+            "procedure": [
+              "Advance each character using a fixed table, in em units at the box font size: space `0.278`; `ijlt.,:;|!'` and backtick `0.300`; `fIr()[]{}/\\-` `0.340`; digits `0.556`; `m` and `w` `0.850`; `M`, `W`, `@` `0.940`; other capitals `0.680`; everything else `0.556`.",
+              "Multiply the total by a 1.06 safety margin, so that a real font whose metrics differ slightly from the table still fits inside the box the table predicted.",
+              "Wrap greedily at word boundaries against the usable width, which is `NODE_W` minus the padding and minus any shape inset — a hexagon and a parallelogram both eat horizontal space at their slanted ends.",
+              "Hard-break any single token longer than the line. Long ids and URLs must not overflow the box silently.",
+              "Emit the wrapped lines as explicit `<tspan>` elements with their own coordinates, so no browser reflow can ever move a line after the fact. The box height is then padding plus line count times line height, floored at `MIN_NODE_H 46`."
+            ],
+            "rules": [
+              "The table is deliberately approximate and deliberately fixed. Accuracy is not the goal; *agreement* is. Every renderer that implements this table produces the same geometry.",
+              "This is why the font stack is part of the spec rather than a theme setting. Change the stack and the 1.06 margin stops being a margin.",
+              "No `textLength`, no `dominant-baseline` tricks, no measuring an off-screen node. The SVG is fully positioned before it reaches a browser."
+            ],
+            "failureModes": [
+              {
+                "when": "A title runs past 70 characters",
+                "then": "It wraps to three or four lines and the whole row grows to match — legal, but the box stops scanning",
+                "step": "position-lanes-and-rows"
+              },
+              {
+                "when": "A note contains an unbreakable 40-character token",
+                "then": "Hard-broken mid-token rather than overflowing"
+              }
+            ]
+          }
+        },
+        {
+          "id": "check-for-phases",
+          "type": "question",
+          "actorId": "renderer",
+          "title": "Does the workflow declare phases?",
+          "note": "Phases add a left rail; nothing else changes",
+          "primaryLabel": "Yes",
+          "detail": {
+            "purpose": "Decide whether to reserve a left margin for phase labels, which is the only place in the entire pipeline where a document-level option changes a coordinate.",
+            "actor": "`buildDocument()` before `position()`",
+            "duration": "instant",
+            "procedure": [
+              "Look for a non-empty `phases` array on the workflow. Each entry names a label and a `from` and `to` step id.",
+              "If present, resolve each `from` and `to` to a lane-0 node and record the row range. A phase that names a step which does not exist is an error, not a warning — a mislabelled band is worse than no band.",
+              "Sort the resolved phases by their first row, so the rail reads top to bottom regardless of the order they were written in.",
+              "Pass a single boolean into the positioning stage: with phases, every lane's x is offset by the rail width; without, it is not."
+            ],
+            "rules": [
+              "Phases add no nodes and no edges. They cannot change rows, cannot change lanes, and cannot change which box sits where relative to any other box.",
+              "Ranges should be contiguous and non-overlapping over lane 0. Nothing enforces it, but overlapping bands render as overlapping bands and look exactly as wrong as they are.",
+              "Phases are worth declaring on any diagram over about ten rows. Below that the reader can hold the whole thing at once and the rail is noise."
+            ],
+            "failureModes": [
+              {
+                "when": "A phase names a step inside a branch",
+                "then": "It resolves to that node's row, and the band covers rows the author did not intend — keep phase endpoints on lane 0"
+              },
+              {
+                "when": "A phase names a step id that does not exist",
+                "then": "Refused with the phase label quoted"
+              }
+            ]
+          },
+          "branches": [
+            {
+              "label": "No phases declared",
+              "tone": "neutral",
+              "note": "Skip the rail; the first lane starts at PAD",
+              "steps": [
+                {
+                  "id": "use-a-zero-rail",
+                  "type": "action",
+                  "actorId": "renderer",
+                  "title": "Start the first lane at the page padding",
+                  "note": "x = PAD, with no rail offset",
+                  "detail": {
+                    "purpose": "Keep undecorated diagrams flush left, so a document that declares no phases pays nothing for the feature it did not use.",
+                    "actor": "`position()`",
+                    "duration": "instant",
+                    "procedure": [
+                      "Set the starting x to `PAD` — 28 at comfortable density — rather than `PAD + PHASE_RAIL`.",
+                      "Skip the band geometry entirely. No rail is drawn, no labels are laid out, and the canvas width shrinks by exactly the rail width.",
+                      "Everything downstream is unchanged: lane widths, gaps, row heights, merge bands, and routing are all computed identically."
+                    ],
+                    "rules": [
+                      "This is the only branch in this diagram that rejoins the spine rather than terminating. It skips exactly one step — the band resolution — and picks the pipeline back up at positioning, which is why its exit is a `join` and not a `continue`.",
+                      "Two diagrams that differ only in whether they declare phases have identical internal geometry, offset by the rail width. That is a property worth preserving, because it means adding phases to an existing diagram never reshapes it."
+                    ],
+                    "failureModes": [
+                      {
+                        "when": "Phases are added later",
+                        "then": "Every x shifts right by the rail width and nothing else moves at all",
+                        "step": "position-lanes-and-rows"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "join",
+                "to": "position-lanes-and-rows"
+              }
+            }
+          ]
+        },
+        {
+          "id": "resolve-phase-bands",
+          "type": "action",
+          "actorId": "renderer",
+          "title": "Resolve each phase to a row range",
+          "note": "from/to step ids become first and last rows",
+          "detail": {
+            "purpose": "Turn author-written step ids into the row numbers the rail is drawn against, now that rows are final and can no longer move.",
+            "actor": "`buildDocument()` in `src/layout.mjs`",
+            "duration": "linear in phase count",
+            "inputs": [
+              {
+                "label": "phases[]",
+                "value": "`{ label, from, to }` with step ids"
+              }
+            ],
+            "outputs": [
+              {
+                "label": "Resolved bands",
+                "value": "`{ label, fromRow, toRow }`, sorted by fromRow"
+              }
+            ],
+            "procedure": [
+              "Look each `from` and `to` id up in the step index built during flattening. A miss is an error naming the phase label.",
+              "Take each endpoint's final row. This has to happen after the fan-row reservation pass, because reservation can push rows down and a band resolved earlier would be off by however many rows moved.",
+              "Sort the bands by first row, so they render top to bottom regardless of the order in the document.",
+              "Reserve the rail width on the left. The band itself is drawn as a subtle background stripe spanning the full canvas width, with the label set vertically in the rail."
+            ],
+            "rules": [
+              "Bands span the whole canvas, not just lane 0, so a branch that runs deep into the *Draw* phase is visibly still in the Draw phase.",
+              "Row ranges are inclusive at both ends.",
+              "A phase whose range is a single row is legal and occasionally right — a long, self-contained approval step is a phase of its own."
+            ],
+            "failureModes": [
+              {
+                "when": "Two phases overlap",
+                "then": "Both bands draw and the overlap is visible; nothing refuses, because the intent is occasionally deliberate"
+              },
+              {
+                "when": "A phase's `to` is above its `from`",
+                "then": "The band inverts and renders as a zero-height stripe"
+              }
+            ]
+          }
+        },
+        {
+          "id": "position-lanes-and-rows",
+          "type": "parallel",
+          "actorId": "renderer",
+          "title": "Position columns and rows",
+          "note": "Two independent computations; neither can affect the other",
+          "tracks": [
+            "Columns: x = PAD (+ rail) + Σ lane widths and LANE_GAPs, left to right",
+            "Rows: y accumulates row heights plus gutters, top to bottom"
+          ],
+          "detail": {
+            "purpose": "Convert lane indices and row indices into pixels. The two calculations are genuinely independent — nothing about a box's width can affect its row, and nothing about a row's height can affect its column — which is why they are drawn as concurrent tracks.",
+            "actor": "`position()` in `src/layout.mjs`",
+            "duration": "linear",
+            "outputs": [
+              {
+                "label": "lane.x, lane.cx, lane.w",
+                "value": "Per lane; every node in the lane is centred on `cx`"
+              },
+              {
+                "label": "rowTop[], rowH[]",
+                "value": "Per row; every node in the row shares a top edge"
+              },
+              {
+                "label": "width, height",
+                "value": "The canvas, sized to fit exactly"
+              }
+            ],
+            "procedure": [
+              "**Columns.** Walk lanes in index order accumulating x. A lane holding at least one node is `NODE_W` wide — 236 at comfortable density; a lane holding only a bypass line gets the narrow `EMPTY_LANE_W` instead, and its centre is offset so the line still lands where a box would have been. Add `LANE_GAP 44` between lanes.",
+              "**Rows.** Each row's height is the tallest box in it, computed in the measuring stage. Accumulate downward, adding a gutter between consecutive rows.",
+              "Widen any gutter that has to carry more than one merge band: `STUB + (bands − 1) × BAND_GAP + 16`, so stacked bands never overlap each other or the boxes above and below them.",
+              "Centre every node horizontally on its lane's centreline and top-align it to its row, then compute the canvas extents from the final lane and the final row."
+            ],
+            "rules": [
+              "Every node in a lane shares one x. That is the skewer: a maximal vertical run of boxes threaded on one line, with no box off-axis from the line entering or leaving it.",
+              "Lanes are never packed or reused, even when a lane is only occupied for two rows out of forty. Packing would make horizontal position depend on vertical position, and severity would stop being readable off the x-axis.",
+              "Vertical growth is free and horizontal growth is expensive — the reason for that asymmetry is that the reader can scroll down without losing the spine, and cannot scroll right without losing it."
+            ],
+            "failureModes": [
+              {
+                "when": "A workflow has more than about twelve lanes",
+                "then": "The canvas exceeds a comfortable screen width; the diagram is not wrong, but it wants splitting",
+                "step": "emit-the-svg"
+              },
+              {
+                "when": "One box wraps to five lines",
+                "then": "Its whole row grows to match, including every other box in that row"
+              }
+            ]
+          }
+        },
+        {
+          "id": "allocate-merge-bands",
+          "type": "action",
+          "actorId": "renderer",
+          "title": "Allocate a band in the gutter above each merge target",
+          "note": "One band per target; stacked by target lane, leftmost on top",
+          "detail": {
+            "purpose": "Give every set of merges into the same box one shared horizontal line to travel along, so that three branches rejoining the spine produce one clean band rather than three overlapping horizontals.",
+            "actor": "`position()` in `src/layout.mjs`",
+            "duration": "linear in merge count",
+            "procedure": [
+              "Group every `merge` and `bypass` edge by its target node. Each group gets exactly one band, placed in the gutter immediately above the target's row.",
+              "Within one gutter, order the bands by target lane ascending — the leftmost target's band sits topmost — and then by node index to break ties deterministically.",
+              "Record each band's horizontal extent from the leftmost source to the target's centreline, so the drawn segment is exactly as long as it needs to be and no longer.",
+              "Widen the gutter to fit: a gutter with `n` bands is at least `STUB + (n − 1) × BAND_GAP + 16` tall, where `BAND_GAP` is 14 at comfortable density."
+            ],
+            "rules": [
+              "Bands live above their target, never below. That follows directly from the direction check: every merge points downward, so its target is always below every source, and the gutter above the target is always free of the sources' boxes.",
+              "Ordering by target lane is what keeps stacked bands from crossing each other. Two bands in one gutter with targets in different lanes are nested, not interleaved.",
+              "A band with one source is still a band. Uniform treatment costs a few pixels and removes an entire class of special case from the router."
+            ],
+            "failureModes": [
+              {
+                "when": "Four branches merge into one step",
+                "then": "One band with four drops into it, and a gutter roughly 40px taller than the default",
+                "step": "route-orthogonal-paths"
+              },
+              {
+                "when": "Two bands in a gutter have targets in the same lane",
+                "then": "Ordered by node index; deterministic, and geometrically identical either way"
+              }
+            ]
+          }
+        },
+        {
+          "id": "route-orthogonal-paths",
+          "type": "action",
+          "actorId": "renderer",
+          "title": "Route every edge as right angles",
+          "note": "Down, right, or left to merge — nothing else",
+          "detail": {
+            "purpose": "Convert the node positions and band allocations into actual path geometry: straight segments and right angles, nothing diagonal and nothing curved except the rounded corner where a line turns.",
+            "actor": "`route()` in `src/layout.mjs`, drawn by `src/svg.mjs`",
+            "duration": "linear in edge count",
+            "procedure": [
+              "A sequential edge is one vertical line down the lane.",
+              "A fan edge leaves the question's right vertex, runs right along that row, and drops into the branch's column.",
+              "A merge edge drops down its own lane to the band above its target, runs left, and enters the target's top edge.",
+              "Corners are rounded by a fixed radius so a turn reads as one line rather than two."
+            ],
+            "rules": [
+              "Every segment is horizontal or vertical. There are no diagonals.",
+              "Crossings are not routed around at this stage — they are prevented earlier, by the column ordering and the row reservation, and anything left over is caught by the check that follows."
+            ],
+            "failureModes": [
+              {
+                "when": "A band crosses several drops",
+                "then": "One hop per crossing, all on the band rather than on the drops, so the vertical lines stay unbroken"
+              },
+              {
+                "when": "A fan spans eight lanes",
+                "then": "One long horizontal with eight drops — legal and readable, but a sign the question is really a choice with a table behind it"
+              }
+            ]
+          }
+        },
+        {
+          "id": "emit-the-svg",
+          "type": "output",
+          "actorId": "renderer",
+          "title": "Emit the SVG into a self-contained page",
+          "note": "Same document in, same bytes out",
+          "destination": "One HTML file: diagrams, modals, source, renderer, prompt",
+          "detail": {
+            "purpose": "Serialise the finished geometry and assemble the page — every diagram, every modal, the document that produced them, the renderer, and the prompt — into one file with no external dependencies.",
+            "actor": "`src/svg.mjs` and `src/page.mjs`",
+            "duration": "single-digit milliseconds",
+            "outputs": [
+              {
+                "label": "SVG",
+                "value": "One per workflow, fully positioned, with explicit tspans"
+              },
+              {
+                "label": "HTML",
+                "value": "Self-contained page: CSS, JS, modal payloads, embedded source, embedded prompt"
+              }
+            ],
+            "procedure": [
+              "Emit each node as its shape — rectangle, hexagon, trapezoid, right- and left-slanted parallelograms, split rectangle, double-side-barred rectangle, clipped-corner rectangle, double-top-and-bottom-barred rectangle, stadium — with the wrapped tspans already positioned.",
+              "Emit the paths, the fan labels, the phase rail, the display numbers, and the chips. Chips carry the resolved target so they can scroll and flash it on click.",
+              "Serialise each step's `detail` into the page as the modal payload, rendered according to the workflow's lens.",
+              "Inline everything: stylesheet, script, the complete WFD source, and the master prompt. No CDN, no fetch, no font download. The finished page opens from `file://` on a machine with no network.",
+              "Print a one-line summary — diagram count, step count, and how many steps rendered with no detail. That last number is the only quality metric the renderer can compute, and it should be zero."
+            ],
+            "rules": [
+              "Determinism is the deliverable. The same document produces the same bytes on any machine, which is what lets a diagram live in version control and be reviewed in a pull request like code.",
+              "Nothing in the pipeline consults the clock, the locale, a random source, or the DOM. If two renders of one document differ, that is a bug in the renderer, not a variation.",
+              "The page carries its own source and its own prompt on purpose. An artefact that can regenerate itself, and can teach a reader to make the next one, does not need the site it came from to keep existing."
+            ],
+            "failureModes": [
+              {
+                "when": "A step has no `detail`",
+                "then": "It renders, the modal opens empty, and the summary line counts it — which is the number to drive to zero",
+                "step": "read-the-document"
+              },
+              {
+                "when": "The page is several hundred KB",
+                "then": "Normal; that weight is modal prose, and it is the part worth carrying"
+              }
+            ]
+          }
+        }
+      ],
+      "end": {
+        "label": "One self-contained page · byte-identical every time",
+        "tone": "success",
+        "note": "No network, no build step, no server at the reading end"
+      }
+    },
+    {
+      "id": "choose-an-exit",
+      "title": "Choose how a branch ends",
+      "description": "Every branch has to terminate, and there are exactly five ways to do it. Choosing wrongly is the one authoring mistake that produces a document which validates and is still wrong. This is that decision as a diagram: eight questions, asked in order of how much the answer costs, with the trap that catches most people sitting near the top.",
+      "lens": "generic",
+      "summary": {
+        "trigger": "You have written a branch — the steps someone takes when a question does not go the good way — and now it has to end somewhere",
+        "outcome": "One of `continue`, `join`, `goback`, `goto`, or `end`, chosen for a reason you could defend to someone reading the diagram in a year",
+        "owner": "Whoever is authoring the document, model or human",
+        "duration": "under a minute per branch, once you have walked it twice",
+        "frequency": "Once per branch — the most-repeated decision in the format"
+      },
+      "start": {
+        "label": "A branch exists and has to end somewhere",
+        "note": "A dangling branch is not legal; there are exactly five endings"
+      },
+      "steps": [
+        {
+          "id": "state-the-deviation",
+          "type": "action",
+          "actorId": "author",
+          "title": "Say out loud what happens and what happens next",
+          "note": "Two clauses; if you need three, it is two branches",
+          "detail": {
+            "purpose": "Force the branch into a single sentence before choosing an ending, because the ending is almost always obvious from the sentence and almost never obvious from the JSON.",
+            "actor": "The author",
+            "duration": "under a minute",
+            "procedure": [
+              "Write one sentence in exactly this shape: *when X happens, we do Y, and then Z.* For example, *when the card is declined, we ask for another card, and then we try the payment again.*",
+              "Look at the *and then* clause. It is the exit. \"...and then we try the payment again\" points back up the diagram; \"...and then we carry on\" points at the next step; \"...and then we're done, the order is cancelled\" points at nothing.",
+              "If your sentence needs three clauses, or contains the word *unless*, you have two branches tangled together and the ending you pick will be wrong for one of them.",
+              "Write the sentence down somewhere. It is the first line of the branch's `detail.purpose`, and you have just written it."
+            ],
+            "rules": [
+              "The exit is a property of the process, not a stylistic choice. There is a correct answer, and the sentence contains it.",
+              "Branch labels name the **answer**, not the consequence. `\"Declined\"`, `\"Timeout\"`, `\"No\"` — never `\"Go to error handling\"`. The label says what happened; the exit says where it goes.",
+              "If you cannot say what happens next, you have found something real: nobody knows. Say that in `detail.rules` and route it to a human. An honest unknown is worth more than a confident guess."
+            ],
+            "failureModes": [
+              {
+                "when": "The sentence has two *and then* clauses",
+                "then": "Two branches; split the question",
+                "step": "split-the-question"
+              },
+              {
+                "when": "The *and then* clause is a paragraph",
+                "then": "The branch is a process, not a detour",
+                "step": "promote-the-branch"
+              }
+            ]
+          }
+        },
+        {
+          "id": "check-it-is-one-decision",
+          "type": "question",
+          "actorId": "author",
+          "title": "Is this one deviation rather than two?",
+          "note": "If the label needs \"and\" or \"or\", it is two",
+          "primaryLabel": "Yes",
+          "detail": {
+            "purpose": "Catch tangled branches before choosing an exit, because a branch that covers two situations will need two different endings and you will pick the one that suits the situation you thought of first.",
+            "actor": "The author",
+            "duration": "seconds",
+            "procedure": [
+              "Read the branch label. If it contains *and*, *or*, or a slash, it is covering more than one answer.",
+              "Read the branch's steps. If the first two steps only make sense in one situation and the last two only make sense in another, the branch is two branches sharing a lane.",
+              "Read the question that owns it. A question whose title contains *and* is two questions, and its branches will inherit the tangle no matter how carefully you label them.",
+              "Ask whether both situations end the same way. Two situations that share every step *and* the same ending are genuinely one branch with a two-word label — that case is fine."
+            ],
+            "rules": [
+              "One question, one decision. This is the rule that prevents most of the others from being needed.",
+              "Two questions in a row on the spine cost one row each and read cleanly. One question with a compound label costs nothing and reads wrong forever.",
+              "A `choice` with named answers is the right shape when several situations are genuinely alternatives at the same moment; two stacked questions are right when they happen at different moments."
+            ],
+            "failureModes": [
+              {
+                "when": "The two situations need different endings",
+                "then": "Definitive — split them",
+                "step": "split-the-question"
+              },
+              {
+                "when": "There are five or more situations",
+                "then": "It is a `choice`, not a stack of questions",
+                "step": "check-the-length"
+              }
+            ]
+          },
+          "branches": [
+            {
+              "label": "Two tangled together",
+              "tone": "warn",
+              "note": "Different situations, different endings, one lane",
+              "steps": [
+                {
+                  "id": "split-the-question",
+                  "type": "action",
+                  "actorId": "author",
+                  "title": "Split it into two questions on the spine",
+                  "note": "Stacked, not nested — depth is more expensive than height",
+                  "detail": {
+                    "purpose": "Turn one compound gate into two simple ones so that each branch has exactly one situation and therefore exactly one correct ending.",
+                    "actor": "The author",
+                    "duration": "5 minutes",
+                    "procedure": [
+                      "Write both questions out separately, each with a yes/no answer where the good answer is the primary one and continues down the spine.",
+                      "Put them **in sequence on lane 0**, not nested. Stacking costs one extra row; nesting costs a whole lane and pushes every later branch further right.",
+                      "Order them by which is asked first in real life. If both are checked at the same moment against the same data, they are probably one `choice` with named answers rather than two questions.",
+                      "Now re-run this decision separately for each branch. That is the point of the split: two questions, two branches, two endings, each obviously right."
+                    ],
+                    "rules": [
+                      "Prefer height to depth, always. A diagram twice as tall is legible; a diagram one lane wider costs 280 pixels and pushes everything to its right.",
+                      "After splitting, check the polarity of both questions. A compound question often hid an inverted one, and an inverted question puts the happy path on the wrong side.",
+                      "Two questions with the same branch steps are a sign you split on the wrong axis. Re-read the sentence from the first step."
+                    ],
+                    "failureModes": [
+                      {
+                        "when": "The split produces two identical branches",
+                        "then": "It was one question after all; merge them and give the branch a two-word label",
+                        "step": "state-the-deviation"
+                      },
+                      {
+                        "when": "The second question only applies inside the first branch",
+                        "then": "That one is genuinely nested — accept one lane of depth"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "continue"
+              }
+            }
+          ]
+        },
+        {
+          "id": "check-the-length",
+          "type": "question",
+          "actorId": "author",
+          "title": "Will the branch fit in five steps or fewer?",
+          "note": "A branch longer than five steps is a diagram, not a detour",
+          "primaryLabel": "Yes",
+          "tag": "The trap",
+          "detail": {
+            "purpose": "Ask the length question before the ending question, because a branch that is too long has already answered the ending question — it is going to be a `goto`, and everything you decide about `continue` versus `join` first will be wasted.",
+            "actor": "The author",
+            "duration": "seconds",
+            "procedure": [
+              "Count the steps you would need to write. Not the steps you have written — the steps the situation actually requires, including the ones you were about to summarise into one box.",
+              "Five is the ceiling and it is not arbitrary: a six-step branch is taller than most spines, it drags its lane down past everything it is supposed to be an exception to, and the renderer warns about it by name.",
+              "Check the other two promotion signals while you are here. Does it have its own trigger — something that starts it from outside, rather than something that happened on this spine? Does it have a different owner *and* a different success condition? Either is enough on its own.",
+              "If it is long, stop working the exit decision. The branch is a workflow, and its ending is decided by whether control comes back."
+            ],
+            "rules": [
+              "This is the trap the whole diagram exists to spring. Most badly shaped documents are not documents with wrong exits; they are documents with one branch that should have been a diagram, and every wrong exit downstream is a consequence of that.",
+              "The preference order is: `continue` over `join`, `join` over `goback`, `goback` over a new diagram, and a new diagram over a twelve-step branch. The last of those is the only one that is absolute.",
+              "Length is a proxy for independence. A branch that needs six steps is doing work that has its own beginning and its own end, whatever you call it."
+            ],
+            "failureModes": [
+              {
+                "when": "You compress six steps into three boxes to stay under the ceiling",
+                "then": "You have hidden the process rather than shortened it — the boxes will not survive the modal review",
+                "step": "promote-the-branch"
+              },
+              {
+                "when": "The branch is exactly five steps and growing",
+                "then": "Promote it now; branches only ever grow"
+              }
+            ]
+          },
+          "branches": [
+            {
+              "label": "Six or more",
+              "tone": "error",
+              "note": "It has its own beginning and its own end — it is a diagram",
+              "steps": [
+                {
+                  "id": "promote-the-branch",
+                  "type": "action",
+                  "actorId": "author",
+                  "title": "Promote it to a workflow of its own",
+                  "note": "Then decide: does control come back?",
+                  "detail": {
+                    "purpose": "Move the branch out into a diagram with its own trigger, outcome, and summary, and leave behind a single reference in the place it used to sprawl.",
+                    "actor": "The author",
+                    "duration": "one more pass over the document",
+                    "procedure": [
+                      "Give the new workflow a trigger and an outcome, both stated as things that happen in the world. If you cannot state a trigger different from the caller's, the branch is not independent and should be collapsed instead of promoted.",
+                      "Decide whether control returns. **If it does**, the branch becomes an `insert` step on the spine and the box itself is the link — nothing terminates, and the reader knows the spine continues after it. **If it does not**, the branch keeps whatever steps run before the handoff and terminates in a `goto` chip.",
+                      "Give the promoted workflow its own `summary` and, if it is long, its own phases. It is a diagram now, not a fragment.",
+                      "Place it in the document after the workflow that references it. Document order is reading order and it sets the diagram numbers that every chip is labelled with."
+                    ],
+                    "rules": [
+                      "`insert` when control returns; `goto` when it does not. Getting this backwards makes the diagram lie about whether anything happens afterwards, and it is the one lie readers do not catch.",
+                      "Two to six workflows is comfortable. More than eight usually means you split on data variation — enterprise versus self-serve — rather than on process variation.",
+                      "The promoted diagram needs its own exit decisions for its own branches. That is why this branch leaves for diagram 1 rather than looping back here: you are starting a document, not finishing a branch."
+                    ],
+                    "failureModes": [
+                      {
+                        "when": "The promoted workflow has three steps",
+                        "then": "It was not independent; inline it and collapse the nesting instead",
+                        "step": "split-the-question"
+                      },
+                      {
+                        "when": "Two workflows now goto each other",
+                        "then": "One of them is really an `insert` — find the one where control comes back"
+                      }
+                    ],
+                    "links": [
+                      {
+                        "label": "The authoring loop, from the top",
+                        "href": "#wf-make-a-diagram"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "goto",
+                "workflow": "make-a-diagram",
+                "step": "describe-the-process",
+                "label": "Re-describe it as two workflows"
+              }
+            }
+          ]
+        },
+        {
+          "id": "check-it-does-something",
+          "type": "question",
+          "actorId": "author",
+          "title": "Does the branch do any work of its own?",
+          "note": "Some answers only mean \"skip the next bit\"",
+          "primaryLabel": "Yes",
+          "detail": {
+            "purpose": "Recognise the branch that has no steps at all — the pure bypass — because it is legal, cheap, and consistently written as a one-step branch containing a box that says nothing.",
+            "actor": "The author",
+            "duration": "seconds",
+            "procedure": [
+              "Ask what someone actually *does* on this branch. If the honest answer is \"nothing — we just skip the verification and carry on\", the branch has no steps.",
+              "Watch for the placeholder box. `\"Skip verification\"`, `\"Do nothing\"`, `\"Proceed\"` and `\"No action required\"` are all the same non-step, and each of them will fail the modal review because there is nothing to write in it.",
+              "Leave `steps` as an empty array and give the branch a real `exit` and a real `note`. The note is where the explanation goes — it renders on the canvas next to the answer label.",
+              "Check the exit carefully, because a bypass is exactly the case where `continue` and `join` differ. Skipping *the next step* is a `join` further down; carrying straight on is a `continue`."
+            ],
+            "rules": [
+              "An empty branch renders as a single line leaving the question and merging into its target, drawn in a narrow column rather than a full-width one. It is the cheapest thing in the notation.",
+              "A branch whose only step would restate the branch label is a bypass. Delete the box.",
+              "Bypasses still need a `note` if the reason is not obvious from the label. The note is one muted line on the canvas and it is often the most-read text in the diagram."
+            ],
+            "failureModes": [
+              {
+                "when": "The 'nothing' turns out to be a state change",
+                "then": "It is a `shelf` step and it belongs on the branch after all",
+                "step": "check-ancestor-and-below"
+              },
+              {
+                "when": "The bypass skips three steps",
+                "then": "That is a `join`, and the note should say what is being skipped and why",
+                "step": "rejoins-a-later-step"
+              }
+            ]
+          },
+          "branches": [
+            {
+              "label": "Nothing happens",
+              "tone": "info",
+              "note": "A pure bypass — this branch of this question is one",
+              "steps": [
+                {
+                  "id": "leave-the-steps-array-empty",
+                  "type": "action",
+                  "actorId": "author",
+                  "title": "Leave the steps array empty and write the note",
+                  "note": "The note carries what the missing box would have said",
+                  "detail": {
+                    "purpose": "Express \"skip this part\" as an empty branch with a good note, rather than as a box containing a restatement of its own label.",
+                    "actor": "The author",
+                    "duration": "a minute",
+                    "procedure": [
+                      "Set `\"steps\": []`. This is legal and expected; the renderer emits a single bypass edge from the question straight to the merge target.",
+                      "Write a `note` on the branch of at most about 80 characters, saying what is being skipped and why. It renders under the answer label, on the line, where a reader scanning the right margin will see it.",
+                      "Choose the exit deliberately. `continue` means *carry on from the next step*; `join` means *skip ahead to this named step*. For a bypass those are usually different things and it is easy to write the first while meaning the second.",
+                      "Do not add a `detail` — there is no box to open. Everything the reader needs is in the label and the note."
+                    ],
+                    "rules": [
+                      "The empty lane still consumes a lane index, but renders narrow. Bypasses are cheap in width; steps are not.",
+                      "If you find yourself wanting a modal on a bypass, the branch does do something and you should give it a step.",
+                      "This branch is itself an example: there is nothing to do about a bypass except recognise it, so the decision continues at the next question."
+                    ],
+                    "failureModes": [
+                      {
+                        "when": "The note has to explain three things",
+                        "then": "The bypass is hiding a step; write the step",
+                        "step": "state-the-deviation"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "continue"
+              }
+            }
+          ]
+        },
+        {
+          "id": "rejoins-the-next-step",
+          "type": "question",
+          "actorId": "author",
+          "title": "Does it pick the spine back up at the very next step?",
+          "note": "The default answer, and the one to reach for first",
+          "primaryLabel": "No",
+          "detail": {
+            "purpose": "Test for the commonest ending first, because it is the cheapest to write, the cheapest to read, and the only one that never needs maintaining when a step id changes.",
+            "actor": "The author",
+            "duration": "seconds",
+            "procedure": [
+              "Read the *and then* clause of your sentence. If it is \"...and then we carry on as normal\", this is a `continue`.",
+              "Check what \"the next step\" actually means here: the step immediately after the question that owns this branch, in the owning lane. If the question is the last step of its lane, it means that lane's own ending — which chains, and is usually what you want.",
+              "Prefer `continue` to `join` whenever both would work. `continue` names no target, so it cannot rot when a step id changes, and it survives someone inserting a step above it.",
+              "If a `join` you wrote points at exactly the step after the question, rewrite it as a `continue`. Same geometry, one fewer name to keep in sync."
+            ],
+            "rules": [
+              "`continue` is the default. The order of preference is `continue`, then `join`, then `goback`, then a new diagram — and every step down that list costs the reader something.",
+              "`continue` produces a merge line and no extra box, exactly like `join`. The difference is entirely in what has to stay true for the document to keep validating.",
+              "A recovery branch that fixes the problem and carries on is nearly always a `continue`. A recovery branch that has to re-run the failed step is a `goback` — the distinction is whether the failed step needs doing again."
+            ],
+            "failureModes": [
+              {
+                "when": "It rejoins two steps further down",
+                "then": "That is a `join`, and it should skip visibly",
+                "step": "check-ancestor-and-below"
+              },
+              {
+                "when": "It re-runs the step that failed",
+                "then": "That is a `goback`, not a rejoin",
+                "step": "check-at-or-above"
+              }
+            ]
+          },
+          "branches": [
+            {
+              "label": "Yes, immediately after",
+              "tone": "success",
+              "note": "No target to name and nothing to keep in sync",
+              "steps": [],
+              "exit": {
+                "type": "end",
+                "label": "Use continue",
+                "tone": "success",
+                "note": "{ \"type\": \"continue\" } — merges into the step after the question"
+              }
+            }
+          ]
+        },
+        {
+          "id": "rejoins-a-later-step",
+          "type": "question",
+          "actorId": "author",
+          "title": "Does it pick the spine back up further down?",
+          "note": "Skipping over steps that no longer apply",
+          "primaryLabel": "No",
+          "detail": {
+            "purpose": "Handle the branch that rejoins the main route but skips part of it — the customer who paid by invoice and therefore misses three payment steps — which is a `join` and needs a named target.",
+            "actor": "The author",
+            "duration": "a minute",
+            "procedure": [
+              "Identify the step where this branch's work stops mattering and the shared route resumes. That is the join target.",
+              "Verify the target is in an **ancestor lane**: the branch's own lane, or its parent's, up to lane 0. A target inside a sibling branch is never legal, because the two lanes are only related through their shared question.",
+              "Verify the target is **below** the branch's last step once rows are assigned. If it is not, this is a back-reference and belongs to the next question, not this one.",
+              "Name the skipped steps in the branch's `note`. A join is a visible skip on the canvas, and the reader will want to know what was skipped without opening anything."
+            ],
+            "rules": [
+              "`join` names a target, so it is the first exit type that can rot. If someone renames the target step, the document stops validating — which is the good outcome, but it is still maintenance.",
+              "A join into a sibling branch is the most common illegal exit people write. The fix is nearly always that both branches should merge into a shared step on the spine instead.",
+              "If the skip covers more than about three steps, check whether those steps should be a sub-workflow reached by `insert` on the main route, with this branch simply continuing past it."
+            ],
+            "failureModes": [
+              {
+                "when": "The target is above the branch",
+                "then": "Refused by the direction check with a goback replacement quoted",
+                "step": "check-at-or-above"
+              },
+              {
+                "when": "The target is in a sibling branch",
+                "then": "Refused on the lane rule; merge both into a shared spine step instead",
+                "step": "check-ancestor-and-below"
+              }
+            ]
+          },
+          "branches": [
+            {
+              "label": "Yes, further down",
+              "tone": "info",
+              "note": "Ancestor lane, strictly below — check both",
+              "steps": [
+                {
+                  "id": "check-ancestor-and-below",
+                  "type": "action",
+                  "actorId": "author",
+                  "title": "Check the target is an ancestor and below",
+                  "note": "Both conditions, or it is not a join",
+                  "detail": {
+                    "purpose": "Verify the two conditions that make a `join` legal, before the renderer does it for you, because the failure mode reads like a layout complaint and is actually a modelling error.",
+                    "actor": "The author",
+                    "duration": "a minute",
+                    "procedure": [
+                      "**Ancestor.** Walk up from your branch: your lane, the lane of the question that owns it, that lane's owner, up to lane 0. The target must be in one of those. Anything else — a sibling branch, a cousin, a branch of a different question — is refused.",
+                      "**Below.** The target must lay out strictly below the branch's last step. Rows come from longest-path layering, so \"below\" usually matches \"later in the document\", but a branch with several steps can reach further down than you expect.",
+                      "Write the note. \"Invoice customers skip card capture, authorisation, and settlement\" is worth more to a reader than the geometry ever will be.",
+                      "Sanity-check by reading the diagram out loud: *when the customer is on invoice terms, we tag the account, and then we carry on from fulfilment.* If that sentence is true, the join is right."
+                    ],
+                    "rules": [
+                      "Ancestor **and** below. Both, every time. One without the other is a different exit type.",
+                      "If the target is the immediate next step, use `continue` instead — same result, no name to maintain.",
+                      "If you want to join into a sibling branch, what you actually want is for both branches to merge into a shared step on their common ancestor lane. Add that step."
+                    ],
+                    "failureModes": [
+                      {
+                        "when": "Both conditions hold but the diagram looks wrong",
+                        "then": "The skip is real but too large; the skipped run probably wants to be an insert on the spine",
+                        "step": "promote-the-branch"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "end",
+                "label": "Use join",
+                "tone": "success",
+                "note": "{ \"type\": \"join\", \"to\": \"...\" } — ancestor lane, strictly below"
+              }
+            }
+          ]
+        },
+        {
+          "id": "returns-to-an-earlier-step",
+          "type": "question",
+          "actorId": "author",
+          "title": "Does it send the reader back up the diagram?",
+          "note": "Every retry, resubmit, and poll lives here",
+          "primaryLabel": "No",
+          "detail": {
+            "purpose": "Catch every loop in the process, because loops cannot be drawn — there are no upward lines — and must be converted into a terminal chip before the document is written.",
+            "actor": "The author",
+            "duration": "a minute",
+            "procedure": [
+              "Ask whether anything gets *done again*. Retry the payment, ask for the address again, poll the vendor once more, resubmit after correcting the form: all of these return to a step that already ran.",
+              "Identify the exact step you go back to. It is nearly always the step that failed, or the input step just before it — rarely anything else.",
+              "Verify the target is at or above the branch's last step. If it is below, this is a forward skip and belongs to the previous question, and the renderer will say so with the join replacement quoted.",
+              "Write a `label` on the chip if the auto-generated one is not enough. The default renders as `↩ Go back to 3 · Validate the cart`, which is usually right; `Retry with the corrected address` is better when the reason matters more than the destination."
+            ],
+            "rules": [
+              "A `goback` chip is a dead end on the canvas. The line stops there and the reader's eye never travels upward — the chip is clickable and scrolls to its target instead.",
+              "State the loop bound somewhere. \"Three attempts, then hand to a human\" belongs in `detail.rules` on the step being retried, because the chip itself cannot express a count.",
+              "This is the one place the notation is knowingly worse than DRAKON. DRAKON's loop icons make repetition traceable with a fingertip; a chip makes it a lookup. We took that trade to allow retries to arbitrary earlier points, and it is worth knowing you are paying it."
+            ],
+            "failureModes": [
+              {
+                "when": "The target is below the chip",
+                "then": "Refused as a forward merge, with the join replacement quoted",
+                "step": "check-ancestor-and-below"
+              },
+              {
+                "when": "The retry has no bound",
+                "then": "Not a validation error, but an unbounded loop in a real process — write the bound and the escape into the rules",
+                "step": "check-at-or-above"
+              }
+            ]
+          },
+          "branches": [
+            {
+              "label": "Yes, back up",
+              "tone": "warn",
+              "note": "Retry, resubmit, poll — all the same shape",
+              "steps": [
+                {
+                  "id": "check-at-or-above",
+                  "type": "action",
+                  "actorId": "author",
+                  "title": "Check the target is at or above, then bound the loop",
+                  "note": "And say what happens on the last attempt",
+                  "detail": {
+                    "purpose": "Make the back-reference legal and make the loop finite, which are two different problems that arrive together and only one of which the validator can see.",
+                    "actor": "The author",
+                    "duration": "a few minutes",
+                    "procedure": [
+                      "Confirm the target lays out at or above the branch's last step. Anything strictly below is a forward merge and the renderer refuses it, quoting the `join` replacement.",
+                      "Pick the target precisely. Going back to the *input* step usually means the data was wrong; going back to the *action* step usually means the attempt was wrong. They read very differently to someone following the diagram.",
+                      "Bound the loop. Write the attempt count and the escape into `detail.rules` on the step you return to: *three attempts at 2s, 8s, 30s; after the third, the case goes to the review queue.*",
+                      "Then check that the escape exists in the diagram. An unbounded retry with no drawn escape is the most common way a diagram quietly disagrees with reality."
+                    ],
+                    "rules": [
+                      "The chip cannot carry a count and it should not try. Loop bounds live in the modal of the step being retried.",
+                      "If the escape after N attempts is a whole procedure, it is a second branch on the same question — usually the rightmost one, because running out of retries is the worst answer.",
+                      "Two chips pointing at the same target from different branches are fine and common. They are references, not edges, so they cost nothing structurally."
+                    ],
+                    "failureModes": [
+                      {
+                        "when": "There is no escape from the retry",
+                        "then": "Add the branch that fires when the attempts run out, at the same question, on the right",
+                        "step": "confirm-it-finishes"
+                      },
+                      {
+                        "when": "The chip points at a step in another workflow",
+                        "then": "That is a `goto`, not a `goback` — gobacks are always within one diagram",
+                        "step": "decide-insert-or-goto"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "end",
+                "label": "Use goback",
+                "tone": "neutral",
+                "note": "{ \"type\": \"goback\", \"to\": \"...\" } — a chip, at or above, clickable"
+              }
+            }
+          ]
+        },
+        {
+          "id": "is-it-another-process",
+          "type": "question",
+          "actorId": "author",
+          "title": "Is it really a different process from here on?",
+          "note": "Its own trigger, its own outcome, its own owner",
+          "primaryLabel": "No",
+          "detail": {
+            "purpose": "Separate a detour from a handoff. A detour comes back and belongs on this diagram; a handoff does not, and drawing it here is what turns a readable spine into a general graph.",
+            "actor": "The author",
+            "duration": "a minute",
+            "procedure": [
+              "Apply three tests. **Trigger:** does something start it from outside this spine? **Outcome:** does \"done and good\" mean something different from this workflow's outcome? **Owner:** is a different team or role responsible from here on? Two of three is enough.",
+              "Then ask the question that decides which reference to use: does control come back? A fraud review that returns a verdict and lets the order continue is an `insert`. An order that is cancelled and becomes a refund case is a `goto`.",
+              "For a `goto`, keep any steps that run *before* the handoff on this branch, then terminate in the chip. \"Notify the customer, close the case, then go to diagram 4\" is three boxes and a chip, not just a chip.",
+              "Name the target workflow, and the target step if there is a specific entry point. The chip renders as `↗ Go to diagram 2 · Refund flow` and is clickable."
+            ],
+            "rules": [
+              "`insert` is a call: control returns and the spine continues below it. `goto` is a handoff: control does not return and the branch is over. The reader relies on this distinction absolutely.",
+              "This is where the notation diverges from DRAKON, which only has the call. A one-way jump makes the multi-diagram document a general graph rather than a call tree, so \"does this ever come back?\" stops being answerable from the shape — which is exactly why the two references look different.",
+              "If you find yourself wanting a `goto` back to a diagram that gotos you, one of the two is an `insert`. Find the one where control returns."
+            ],
+            "failureModes": [
+              {
+                "when": "Only one of the three tests passes",
+                "then": "It is a detour; keep it here and pick a merge exit",
+                "step": "check-ancestor-and-below"
+              },
+              {
+                "when": "Control does come back",
+                "then": "It is an `insert` step on the spine, not a branch exit at all",
+                "step": "decide-insert-or-goto"
+              }
+            ]
+          },
+          "branches": [
+            {
+              "label": "Yes, and it does not return",
+              "tone": "warn",
+              "note": "Different trigger, different outcome, different owner",
+              "steps": [
+                {
+                  "id": "decide-insert-or-goto",
+                  "type": "action",
+                  "actorId": "author",
+                  "title": "Decide once whether control comes back",
+                  "note": "Comes back: insert on the spine. Does not: goto chip",
+                  "detail": {
+                    "purpose": "Make the call-versus-handoff decision explicitly and once, because it is the only structural fact about a cross-diagram link and readers will believe whatever the diagram says.",
+                    "actor": "The author",
+                    "duration": "a few minutes",
+                    "procedure": [
+                      "Ask the plain question: after the other process finishes, does anything happen on *this* spine? If yes, it is a call. If the case is over as far as this workflow is concerned, it is a handoff.",
+                      "**Call.** Put an `insert` step on the spine — usually on lane 0, not on a branch — naming the workflow, and optionally the entry step. The box is a link and the spine continues below it. This is the shape used for sub-processes that return a verdict.",
+                      "**Handoff.** Keep the steps that run before the departure on the branch, then end it with a `goto` chip naming the workflow and, if useful, the step.",
+                      "Then check the other diagram exists in the same document. Both references resolve at validation time, and a chip pointing at a workflow that is not in the document is refused."
+                    ],
+                    "rules": [
+                      "Both references live in one document. There is no cross-file linking; if two workflows reference each other they ship together, which is deliberate.",
+                      "A `goto` may name a specific entry step, but the target workflow still has exactly one `start`. The chip scrolls the reader to the step; it does not create a second entry point.",
+                      "Diagram numbers in chip labels are positional, taken from document order. Reordering workflows renumbers the chips — which is fine, because the renderer regenerates the labels, and is a good reason never to hand-write a diagram number into a title."
+                    ],
+                    "failureModes": [
+                      {
+                        "when": "You want both — it returns sometimes",
+                        "then": "Two different situations; split the question and give each its own reference",
+                        "step": "split-the-question"
+                      },
+                      {
+                        "when": "The target workflow does not exist yet",
+                        "then": "Write it. Both reference types are refused at validation if the target is missing",
+                        "step": "promote-the-branch"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "end",
+                "label": "Use goto — or insert, if it returns",
+                "tone": "neutral",
+                "note": "{ \"type\": \"goto\", \"workflow\": \"...\" } — a chip; an insert is a step, not an exit"
+              }
+            }
+          ]
+        },
+        {
+          "id": "confirm-it-finishes",
+          "type": "question",
+          "actorId": "author",
+          "title": "Does the path genuinely finish here?",
+          "note": "Including \"a human owns it now and we are done\"",
+          "primaryLabel": "Yes",
+          "detail": {
+            "purpose": "Confirm the last remaining answer rather than defaulting to it, because `end` is what people reach for when they have stopped thinking, and a wrongly terminated branch silently claims a process is over when it is not.",
+            "actor": "The author",
+            "duration": "a minute",
+            "procedure": [
+              "Ask whether anything at all happens afterwards *within this workflow's responsibility*. If a queue picks it up tomorrow and this workflow's owner never touches it again, it genuinely finishes here.",
+              "Write the `label` as an outcome someone could verify from outside: *Refund denied · customer notified*, not *Error* and not *Exit*.",
+              "Set the `tone` honestly. `failure` for a genuine bad outcome, `neutral` for a legitimate non-success like a handoff to a person, `success` for an outcome that is fine even though it left the spine early.",
+              "Add a `note` saying what the reader should know about the aftermath — who owns it now, what the customer sees, what gets written down."
+            ],
+            "rules": [
+              "\"Hand it to a human and we are done\" is a real ending, with tone `neutral`. It is not a failure and it should not be coloured like one.",
+              "An `end` stadium is the only exit with no target, which is why it is the easiest to write and the easiest to write wrongly. If you cannot name the observable outcome, the path does not end here.",
+              "The workflow's own `end` — the one at the bottom of lane 0 — is different from a branch `end`. Lane 0's ending is the outcome the whole workflow exists to produce, and it should almost always have tone `success`."
+            ],
+            "failureModes": [
+              {
+                "when": "Something does happen afterwards",
+                "then": "You have not found the exit yet — start again from the sentence",
+                "step": "state-the-deviation"
+              },
+              {
+                "when": "The label is 'Error' or 'Exit'",
+                "then": "Name the outcome instead; a stadium that says 'Error' teaches the reader nothing",
+                "step": "confirm-it-finishes"
+              }
+            ]
+          },
+          "branches": [
+            {
+              "label": "No, something follows",
+              "tone": "error",
+              "note": "Then one of the four above is the answer — go again",
+              "steps": [
+                {
+                  "id": "restate-the-deviation",
+                  "type": "action",
+                  "actorId": "author",
+                  "title": "Rewrite the sentence and walk it again",
+                  "note": "The and-then clause was missing or wrong",
+                  "detail": {
+                    "purpose": "Send the author back to the one artefact that determines the answer, rather than letting them pick an ending by elimination when the elimination has failed.",
+                    "actor": "The author",
+                    "duration": "a few minutes",
+                    "procedure": [
+                      "Reaching this point means all five endings were rejected, which is not possible for a well-described branch. The sentence is wrong, not the decision.",
+                      "Rewrite it with a real *and then* clause. The commonest defect is a sentence that ends at the deviation — *when the card is declined, we ask for another card* — and never says what happens after that.",
+                      "If the honest continuation is \"and then it depends\", you have a second question hiding inside the branch. Add it as a question **inside** the branch, with its own branches and its own endings.",
+                      "Then walk this diagram again from the top. The second pass takes about thirty seconds and almost always lands."
+                    ],
+                    "rules": [
+                      "A branch that cannot be ended is a branch that has not been described. This is a description problem every time.",
+                      "Do not resolve it by picking `end`. A wrongly terminated branch is the one error that neither the validator nor a reader will catch, because a stadium looks finished.",
+                      "If two passes both fail, the branch is a process. Promote it and give it its own diagram."
+                    ],
+                    "failureModes": [
+                      {
+                        "when": "The second pass also fails",
+                        "then": "Promote the branch; it is a workflow",
+                        "step": "promote-the-branch"
+                      },
+                      {
+                        "when": "The continuation depends on something not yet asked",
+                        "then": "Add a question inside the branch and end each of its branches separately",
+                        "step": "split-the-question"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "exit": {
+                "type": "goback",
+                "to": "state-the-deviation",
+                "label": "Rewrite the sentence and go again"
+              }
+            }
+          ]
+        }
+      ],
+      "end": {
+        "label": "Use end — a terminal stadium with a verifiable outcome",
+        "tone": "success",
+        "note": "Name the outcome, set the tone honestly, say who owns it now"
+      }
+    }
+  ]
+}
